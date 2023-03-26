@@ -1,13 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
-import AuthView from "../views/AuthView.vue";
-import { Login, Register } from "@/components/auth";
+import { AuthLayout, MainLayout } from "@/layouts";
+import { Actions } from "../components/main";
+import { Login, Register } from "@/views/auth";
+import { ProjectsList, Project } from "@/views/projects";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: "/",
+      redirect: "/workspace/actions",
+    },
+    {
       path: "/auth",
-      component: AuthView,
+      component: AuthLayout,
       children: [
         {
           path: "login",
@@ -16,6 +22,25 @@ const router = createRouter({
         {
           path: "register",
           component: Register,
+        },
+      ],
+    },
+    {
+      path: "/workspace",
+      component: MainLayout,
+      redirect: "/workspace/actions",
+      children: [
+        {
+          path: "actions",
+          component: Actions,
+        },
+        {
+          path: "projects",
+          component: ProjectsList,
+        },
+        {
+          path: "projects/:projectId",
+          component: Project,
         },
       ],
     },

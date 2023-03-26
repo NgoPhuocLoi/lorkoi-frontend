@@ -12,7 +12,10 @@
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/vue-fontawesome": "^3.0.3",
     "pinia": "^2.0.32",
+    "primeicons": "^6.0.1",
+    "primevue": "^3.25.0",
     "vue": "^3.2.47",
+    "vue-popperjs": "^2.3.0",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {

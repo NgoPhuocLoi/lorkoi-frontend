@@ -1,26 +1,35 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
+import PrimeVue from "primevue/config";
 
 import App from "./App.vue";
 import router from "./router";
 
 import "./assets/style.css";
+import "vue-popperjs/dist/vue-popper.css";
+//theme
+import "primevue/resources/themes/lara-light-indigo/theme.css";
 
-/* import the fontawesome core */
-import { library } from "@fortawesome/fontawesome-svg-core";
+//core
+import "primevue/resources/primevue.min.css";
 
-/* import font awesome icon component */
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+//icons
+import "primeicons/primeicons.css";
 
-/* import specific icons */
-import { faUserSecret } from "@fortawesome/free-solid-svg-icons";
-
-/* add icons to the library */
-library.add(faUserSecret);
+import InputText from "primevue/inputtext";
+import Button from "primevue/button";
+import Avatar from "primevue/avatar";
 
 const app = createApp(App);
 
+// app.config.compilerOptions.isCustomElement = (tag) => {
+//   return tag.startsWith("ion-");
+// };
+app.component("InputText", InputText);
+app.component("Button", Button);
+app.component("Avatar", Avatar);
+app.use(PrimeVue);
+
 app.use(createPinia());
 app.use(router);
-app.component("font-awesome-icon", FontAwesomeIcon);
 app.mount("#app");
