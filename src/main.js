@@ -3,6 +3,7 @@ import { createPinia } from "pinia";
 import PrimeVue from "primevue/config";
 
 import App from "./App.vue";
+const pinia = createPinia();
 import router from "./router";
 
 import "./assets/style.css";
@@ -30,6 +31,6 @@ app.component("Button", Button);
 app.component("Avatar", Avatar);
 app.use(PrimeVue);
 
-app.use(createPinia());
+app.use(pinia);
 app.use(router);
 app.mount("#app");

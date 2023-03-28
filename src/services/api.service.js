@@ -2,9 +2,11 @@ import axios from "axios";
 
 const getToken = () => localStorage["token"];
 
+const BASE_URL = "http://localhost:8080/v1/api";
+
 export const createApiClient = (baseURL, needAuth = false) => {
   const apiClient = axios.create({
-    baseURL,
+    baseURL: `${BASE_URL}${baseURL}`,
     headers: {
       "Content-Type": "application/json",
     },

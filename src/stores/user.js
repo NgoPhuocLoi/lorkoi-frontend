@@ -2,9 +2,9 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 
 export const useUserStore = defineStore("user", () => {
-  const user = reactive({});
+  let user = ref({ name: "Hello" });
   const setUser = (payload) => {
-    user = payload;
+    user.value = payload;
   };
 
   return { user, setUser };

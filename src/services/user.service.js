@@ -1,26 +1,12 @@
 import { createApiClient } from "./api.service";
 
 class UserService {
-  constructor(baseUrl = "/auth", needAuth = false) {
+  constructor({ baseUrl = "/user", needAuth = true }) {
     this.api = createApiClient(baseUrl, needAuth);
   }
 
-  async register({ email, password, firstName, lastName, phone }) {
-    const res = await this.api.post("/register", {
-      email,
-      password,
-      firstName,
-      lastName,
-      phone,
-    });
-    return res.data;
-  }
-
-  async login({ email, password }) {
-    const res = await this.api.post("/login", {
-      email,
-      password,
-    });
+  async getCurrentUser() {
+    const res = await this.api.get("/");
     return res.data;
   }
 }

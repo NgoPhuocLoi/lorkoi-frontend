@@ -1,7 +1,47 @@
 <script setup>
 import { useRoute } from "vue-router";
 import AvatarGroup from "primevue/avatargroup";
+import Draggable from "vuedraggable";
+import { ref, reactive } from "vue";
 const route = useRoute();
+
+const drag = ref(false);
+
+const list = reactive([
+  {
+    id: 1,
+    content: "Task 1",
+  },
+  {
+    id: 2,
+    content: "Task 2",
+  },
+  {
+    id: 3,
+    content: "Task 3",
+  },
+]);
+
+const list2 = reactive([
+  {
+    id: 4,
+    content: "Task 4",
+  },
+  {
+    id: 5,
+    content: "Task 5",
+  },
+  {
+    id: 6,
+    content: "Task 6",
+  },
+]);
+
+const checkMove = (e) => {
+  console.log(e);
+  console.log(list);
+  console.log(list2);
+};
 </script>
 
 <template>
@@ -15,12 +55,7 @@ const route = useRoute();
         <Avatar label="C" size="small" shape="circle" />
         <Avatar label="D" size="small" shape="circle" />
         <Avatar label="E" size="small" shape="circle" />
-        <Avatar
-          label="+2"
-          shape="circle"
-          size="small"
-          style="background-color: '#9c27b0', color: '#ffffff'"
-        />
+        <Avatar label="+2" shape="circle" size="small" />
       </AvatarGroup>
     </div>
 
@@ -51,51 +86,32 @@ const route = useRoute();
           />
         </div>
 
-        <div class="mt-5 pr-2 flex-1 overflow-auto content">
-          <div class="w-full rounded-sm overflow-hidden mt-4">
-            <div
-              class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
-            >
-              <div class="pb-7">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Illo,
-                nostrum?
-              </div>
+        <Draggable
+          :list="list"
+          item-key="id"
+          ghost-class="ghost"
+          class="mt-5 pr-2 flex-1 overflow-auto content"
+          @end="checkMove"
+          group="task"
+        >
+          <template #item="{ element }">
+            <div class="w-full rounded-sm overflow-hidden mt-4">
+              <div
+                class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
+              >
+                <div class="pb-7">{{ element.content }}</div>
 
-              <div class="flex">
-                <Avatar class="ml-auto" label="A" shape="circle" size="small" />
-              </div>
-            </div>
-          </div>
-
-          <div class="w-full rounded-sm overflow-hidden mt-4">
-            <div
-              class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
-            >
-              <div class="pb-7">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Illo,
-                nostrum?
-              </div>
-
-              <div class="flex">
-                <Avatar class="ml-auto" label="A" shape="circle" size="small" />
-              </div>
-            </div>
-          </div>
-          <div class="w-full rounded-sm overflow-hidden mt-4">
-            <div
-              class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
-            >
-              <div class="pb-7">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Illo,
-                nostrum?
-              </div>
-
-              <div class="flex">
-                <Avatar class="ml-auto" label="A" shape="circle" size="small" />
-              </div>
-            </div>
-          </div>
-        </div>
+                <div class="flex">
+                  <Avatar
+                    class="ml-auto"
+                    label="A"
+                    shape="circle"
+                    size="small"
+                  />
+                </div>
+              </div></div
+          ></template>
+        </Draggable>
       </div>
 
       <div class="w-[255px] flex-shrink-0 max-h-full flex flex-col">
@@ -112,51 +128,32 @@ const route = useRoute();
           />
         </div>
 
-        <div class="mt-5 pr-2 flex-1 overflow-auto content">
-          <div class="w-full rounded-sm overflow-hidden mt-4">
-            <div
-              class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
-            >
-              <div class="pb-7">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Illo,
-                nostrum?
-              </div>
+        <Draggable
+          :list="list2"
+          item-key="id"
+          ghost-class="ghost"
+          class="mt-5 pr-2 flex-1 overflow-auto content"
+          @end="checkMove"
+          group="task"
+        >
+          <template #item="{ element }">
+            <div class="w-full rounded-sm overflow-hidden mt-4">
+              <div
+                class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
+              >
+                <div class="pb-7">{{ element.content }}</div>
 
-              <div class="flex">
-                <Avatar class="ml-auto" label="A" shape="circle" size="small" />
-              </div>
-            </div>
-          </div>
-
-          <div class="w-full rounded-sm overflow-hidden mt-4">
-            <div
-              class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
-            >
-              <div class="pb-7">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Illo,
-                nostrum?
-              </div>
-
-              <div class="flex">
-                <Avatar class="ml-auto" label="A" shape="circle" size="small" />
-              </div>
-            </div>
-          </div>
-          <div class="w-full rounded-sm overflow-hidden mt-4">
-            <div
-              class="p-2 text-[14px] shadow-md bg-white border border-blue-900 border-t-0 border-l-4 border-r-0 border-b-0"
-            >
-              <div class="pb-7">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Illo,
-                nostrum?
-              </div>
-
-              <div class="flex">
-                <Avatar class="ml-auto" label="A" shape="circle" size="small" />
-              </div>
-            </div>
-          </div>
-        </div>
+                <div class="flex">
+                  <Avatar
+                    class="ml-auto"
+                    label="A"
+                    shape="circle"
+                    size="small"
+                  />
+                </div>
+              </div></div
+          ></template>
+        </Draggable>
       </div>
 
       <div class="w-[255px] flex-shrink-0 max-h-full flex flex-col">
@@ -309,5 +306,10 @@ button.p-button.p-button-sm {
 
 .content:hover {
   -webkit-mask-position: left top;
+}
+
+.ghost {
+  opacity: 0.5;
+  background-color: blue;
 }
 </style>

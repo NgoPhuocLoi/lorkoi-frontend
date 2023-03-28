@@ -1,27 +1,91 @@
 <script setup>
-import { ref } from "vue";
-const email = ref("");
-const password = ref("");
+import ProgressSpinner from "primevue/progressspinner";
+import { useRouter } from "vue-router";
+import { ref, reactive } from "vue";
+import authService from "@/services/auth.service";
+const AuthService = new authService();
+
+const router = useRouter();
+
+const loading = ref(false);
+const user = reactive({
+  email: "",
+  password: "",
+});
+
+const err = reactive({
+  email: "",
+  password: "",
+});
+
+const resetErr = (e) => {
+  err[e.target.id] = "";
+};
+
+const handleLogin = async () => {
+  loading.value = true;
+  try {
+    const res = await AuthService.login(user);
+    localStorage["token"] = res.data.tokens.accessToken;
+    router.push("/");
+  } catch (error) {
+    const errors = error.response?.data.errors;
+    console.log({ errors });
+    if (errors) {
+      for (let e of errors) {
+        console.log(e.param);
+        err[e.param] = e.msg;
+      }
+    }
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
   <div class="px-[10px]">
-    <div class="p-float-label mb-7">
-      <InputText id="email" :type="'email'" v-model="email" class="w-full" />
-      <label for="email">Email</label>
+    <div class="mt-7">
+      <div class="p-float-label">
+        <InputText
+          id="email"
+          type="text"
+          v-model="user.email"
+          class="w-full"
+          @input="resetErr"
+        />
+        <label for="email">Email</label>
+      </div>
+      <span class="error-msg">{{ err.email }}</span>
     </div>
 
-    <div class="p-float-label mb-4">
-      <InputText
-        id="password"
-        type="password"
-        v-model="password"
-        class="w-full"
+    <div class="my-7">
+      <div class="p-float-label">
+        <InputText
+          id="password"
+          :type="'password'"
+          v-model="user.password"
+          class="w-full"
+          @input="resetErr"
+        />
+        <label for="password">Password</label>
+      </div>
+      <span class="error-msg">{{ err.password }}</span>
+    </div>
+
+    <Button
+      @click="handleLogin"
+      label="Sign up"
+      size="small"
+      class="w-full flex items-center justify-center"
+      :disabled="loading"
+      ><ProgressSpinner
+        v-if="loading"
+        style="width: 20px; height: 20px"
+        strokeWidth="6"
       />
-      <label for="password">Password</label>
-    </div>
-
-    <Button label="Sign in" class="w-full" size="small" />
+      <span v-else>Login</span></Button
+    >
   </div>
 
   <RouterLink
