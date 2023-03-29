@@ -1,15 +1,29 @@
 <script setup>
 import Dialog from "primevue/dialog";
 import OverlayPanel from "primevue/overlaypanel";
-
 import TabView from "primevue/tabview";
 import TabPanel from "primevue/tabpanel";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user";
+
+const router = useRouter();
+const userStore = useUserStore();
 const visible = ref(false);
 const op = ref(null);
+const showUserMenu = ref(null);
 
 const toggle = (e) => {
   op.value.toggle(e);
+};
+
+const toggleUserMenu = (e) => {
+  showUserMenu.value.toggle(e);
+};
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  router.push("/auth/login");
 };
 </script>
 
@@ -21,7 +35,9 @@ const toggle = (e) => {
       <div class="text-[20px] leading-none mt-[4px] mr-2">
         <ion-icon name="folder-outline"></ion-icon>
       </div>
-      <span class="leading-none text-[17px] font-semibold">My actions</span>
+      <span class="leading-none text-[17px] font-semibold"
+        >My actions {{ userStore.user.name }}</span
+      >
     </div>
 
     <div class="flex items-center gap-3">
@@ -45,12 +61,11 @@ const toggle = (e) => {
       </div>
 
       <Avatar
-        image="https://lh3.googleusercontent.com/a/AGNmyxbQGlKF2CebRae6O1V-B_zOuekgWVT1L57NZA4w3Q=s96-c"
-        label="L"
-        class="mr-2"
+        :label="userStore.user.firstName[0].toUpperCase()"
+        class="mr-2 cursor-pointer"
         size="small"
-        style="background-color: #2196f3; color: #ffffff"
         shape="circle"
+        @click="toggleUserMenu"
       />
     </div>
   </div>
@@ -72,7 +87,7 @@ const toggle = (e) => {
     </p>
   </Dialog>
 
-  <OverlayPanel ref="op">
+  <OverlayPanel ref="op" class="w-[500px]">
     <TabView>
       <TabPanel header="All">
         <p>
@@ -109,13 +124,35 @@ const toggle = (e) => {
       </TabPanel>
     </TabView>
   </OverlayPanel>
+
+  <OverlayPanel ref="showUserMenu" class="w-[250px]">
+    <div class="p-3 flex items-center">
+      <Avatar
+        shape="circle"
+        :label="userStore.user.firstName[0].toUpperCase()"
+      />
+      <span class="text-[14px] ml-3 font-bold"
+        >{{ userStore.user.firstName }} {{ userStore.user.lastName }}</span
+      >
+    </div>
+
+    <div>
+      <div class="px-4 py-2 cursor-pointer hover:bg-gray-100">
+        <span class="pi pi-user mr-3 text-gray-400"></span>
+        <span class="text-[14px]">Edit profile</span>
+      </div>
+      <div
+        class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+        @click="handleLogout"
+      >
+        <span class="pi pi-sign-out mr-3 text-gray-400"></span>
+        <span class="text-[14px]">Logout</span>
+      </div>
+    </div>
+  </OverlayPanel>
 </template>
 
 <style>
-.p-overlaypanel {
-  width: 600px;
-}
-
 .p-overlaypanel-content {
   padding: 0 !important;
 }

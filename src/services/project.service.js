@@ -26,7 +26,7 @@ class ProjectService {
   }
 
   async update(projectId, newData) {
-    const res = this.api.put(`/${projectId}`, newData);
+    const res = await this.api.put(`/${projectId}`, newData);
     return res.data;
   }
 

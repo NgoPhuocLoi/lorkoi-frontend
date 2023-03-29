@@ -5,9 +5,9 @@ import { Login, Register } from "@/views/auth";
 import { ProjectsList, Project } from "@/views/projects";
 import userService from "../services/user.service";
 import { useUserStore } from "../stores/user";
-import { createPinia } from "pinia";
+import store from "../stores";
 
-const userStore = useUserStore(createPinia());
+const userStore = useUserStore(store);
 const UserService = new userService({ needAuth: true });
 
 const router = createRouter({
@@ -15,7 +15,7 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: "/workspace/actions",
+      redirect: "/workspace/projects",
     },
     {
       path: "/auth",
@@ -25,7 +25,7 @@ const router = createRouter({
           const user = await UserService.getCurrentUser();
           if (user) return "/";
         } catch (error) {
-          return "/auth/login";
+          console.log(error);
         }
       },
       children: [
@@ -45,10 +45,8 @@ const router = createRouter({
       redirect: "/workspace/actions",
       beforeEnter: async () => {
         try {
-          const user = await UserService.getCurrentUser();
-
-          userStore.setUser(user);
-          console.log(userStore.user, "aaa");
+          const data = await UserService.getCurrentUser();
+          userStore.setUser(data.user);
         } catch (error) {
           return "/auth/login";
         }

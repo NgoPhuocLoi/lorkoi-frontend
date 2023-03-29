@@ -1,11 +1,5 @@
 <script setup>
 import { onBeforeRouteUpdate } from "vue-router";
-import { useUserStore } from "../stores/user";
-
-const userStore = useUserStore();
-onBeforeRouteUpdate(() => {
-  console.log(123);
-});
 </script>
 
 <template>
@@ -13,8 +7,6 @@ onBeforeRouteUpdate(() => {
     <h1 class="text-[46px] font-bold text-center mb-10">Welcome to My App</h1>
     <div class="max-w-[500px] w-full mx-auto">
       <RouterView />
-
-      {{ userStore.user }}
     </div>
   </div>
 </template>

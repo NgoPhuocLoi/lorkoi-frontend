@@ -25,4 +25,15 @@ import { RouterView } from "vue-router";
 ::-webkit-scrollbar-thumb:hover {
   background: #999;
 }
+
+input.p-colorpicker-preview {
+  width: 90px;
+  height: 36px;
+  margin-top: 8px;
+}
+
+.p-tooltip div.p-tooltip-text {
+  font-size: 12px;
+  padding: 10px;
+}
 </style>
