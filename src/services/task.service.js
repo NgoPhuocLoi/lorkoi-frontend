@@ -19,6 +19,15 @@ class TaskService {
   async delete(taskId) {
     await this.api.delete(`/${taskId}`);
   }
+
+  async updatePosition({ sourceList, desList, sourceSectionId, desSectionId }) {
+    await this.api.put("/position", {
+      sourceList,
+      desList,
+      sourceSectionId,
+      desSectionId,
+    });
+  }
 }
 
-export default TaskService
+export default TaskService;

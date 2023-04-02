@@ -1,12 +1,12 @@
 <script setup>
-import AddProjectModel from "@/components/project/AddProjectModal.vue";
+import ProjectModel from "@/components/project/ProjectModal.vue";
 import ProjectService from "@/services/project.service";
 import AvatarGroup from "primevue/avatargroup";
 import Column from "primevue/column";
 import ConfirmDialog from "primevue/confirmdialog";
 import DataTable from "primevue/datatable";
 import { useConfirm } from "primevue/useconfirm";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useProjectStore } from "../../stores/project";
 
@@ -18,6 +18,14 @@ const confirm = useConfirm();
 
 const visible = ref(false);
 const updateProjectId = ref();
+const searchText = ref("");
+
+const projects = computed(() => {
+  if (!searchText) return projectStore.projects;
+  return projectStore.projects.filter((pj) =>
+    pj.name.toLowerCase().includes(searchText.value.toLowerCase())
+  );
+});
 
 onMounted(async () => {
   try {
@@ -53,6 +61,19 @@ const openModal = (projectId) => {
   updateProjectId.value = projectId;
   visible.value = true;
 };
+
+const handlePinProject = async (projectId, value) => {
+  try {
+    const res = await projectService.update(projectId, { pinned: value });
+    projectStore.setProjects(
+      projectStore.projects.map((project) =>
+        project._id === projectId ? res.data.project : project
+      )
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
 </script>
 
 <template>
@@ -65,12 +86,12 @@ const openModal = (projectId) => {
     />
     <div class="p-input-icon-left my-5">
       <i class="pi pi-search" />
-      <InputText placeholder="Search" />
+      <InputText type="text" placeholder="Search" v-model="searchText" />
     </div>
 
     <DataTable
       v-model:selection="selected"
-      :value="projectStore.projects"
+      :value="projects"
       tableStyle="min-width: 50rem"
       class="p-datatable-sm"
       selectionMode="single"
@@ -80,8 +101,14 @@ const openModal = (projectId) => {
         <template #body="slot">
           <div class="flex gap-4 items-center">
             <span
-              class="cursor-pointer"
+              @click.stop="handlePinProject(slot.data._id, !slot.data.pinned)"
+              class="cursor-pointer hover:text-blue-500"
               :class="`pi pi-bookmark${slot.data.pinned ? '-fill' : ''} `"
+              v-tooltip.right="
+                `${
+                  slot.data.pinned ? 'Unpin' : 'Pin'
+                } the project to left panel`
+              "
             ></span>
             <div
               class="w-[20px] rounded-full h-[20px] ml-4 mr-2"
@@ -127,10 +154,7 @@ const openModal = (projectId) => {
     </DataTable>
   </div>
 
-  <AddProjectModel
-    v-model:visible="visible"
-    :updateProjectId="updateProjectId"
-  />
+  <ProjectModel v-model:visible="visible" :updateProjectId="updateProjectId" />
   <ConfirmDialog></ConfirmDialog>
 </template>
 

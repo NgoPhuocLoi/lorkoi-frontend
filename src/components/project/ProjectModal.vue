@@ -9,6 +9,10 @@ const projectStore = useProjectStore();
 const projectService = new ProjectService();
 
 const loading = ref(false);
+const modalInfo = reactive({
+  header: "",
+  labelBtn: "",
+});
 const newProject = reactive({
   name: "",
   color: "25e69c",
@@ -23,11 +27,15 @@ watch(props, () => {
       const res = await projectService.getOne(props.updateProjectId);
       newProject.name = res.data.project.name;
       newProject.color = res.data.project.color;
+      modalInfo.header = `📂Edit ${res.data.project.name}`;
+      modalInfo.labelBtn = `Save changes`;
     }
     getProject();
   } else {
     newProject.name = "";
     newProject.color = "25e69c";
+    modalInfo.header = `📁 Create new Project`;
+    modalInfo.labelBtn = `Create project`;
   }
 });
 const emit = defineEmits(["update:visible"]);
@@ -79,15 +87,15 @@ const onHideModal = () => {
   <Dialog
     v-model:visible="showModal"
     modal
-    header="📁 Create new Project"
+    :header="modalInfo.header"
     :style="{ width: '680px' }"
     v-on:hide="onHideModal"
   >
     <div class="flex gap-8">
       <div class="flex flex-col w-[70%]">
         <label for="name" class="text-[15px] font-semibold"
-          >Project name {{ props.visible }}</label
-        >
+          >Project name
+        </label>
         <input
           id="name"
           type="text"
@@ -108,7 +116,7 @@ const onHideModal = () => {
     >
       <Button
         @click="handleSubmit"
-        label="Create project"
+        :label="modalInfo.labelBtn"
         size="small"
         :disabled="!newProject.name"
         :loading="loading"
