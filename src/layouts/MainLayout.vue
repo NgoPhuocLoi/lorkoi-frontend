@@ -7,7 +7,7 @@ import SplitterPanel from "primevue/splitterpanel";
 
 <template>
   <div class="flex">
-    <div class="min-w-[16%]"><LeftPanel /></div>
+    <div class="w-[20%] overflow-hidden"><LeftPanel /></div>
 
     <div class="w-full overflow-auto flex flex-col h-screen">
       <CenterPanel />

@@ -36,4 +36,11 @@ input.p-colorpicker-preview {
   font-size: 12px;
   padding: 10px;
 }
+
+.p-dialog-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 20px;
+}
 </style>

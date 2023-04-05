@@ -14,7 +14,6 @@ const props = defineProps([
 const emit = defineEmits(["update:status"]);
 const visible = ref(props.status);
 const loading = ref(false);
-
 watch(props, () => {
   visible.value = ref(props.status);
 });

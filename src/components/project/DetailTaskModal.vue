@@ -41,10 +41,15 @@ const handleDeleteTask = async () => {
 
 const handleInput = (e) => {
   clearTimeout(timer);
-
+  console.log(e.target.id);
   timer = setTimeout(async () => {
-    await taskService.update(task.value._id, { title: e.target.innerText });
-    emit("updated-task", { taskId: task.value._id, title: e.target.innerText });
+    await taskService.update(task.value._id, {
+      [e.target.id]: e.target.innerText,
+    });
+    emit("updated-task", {
+      taskId: task.value._id,
+      [e.target.id]: e.target.innerText,
+    });
   }, 600);
 };
 </script>
@@ -86,6 +91,7 @@ const handleInput = (e) => {
             role="textbox"
             contenteditable
             @input="handleInput"
+            id="title"
           >
             {{ task.title }}
           </div>
@@ -97,11 +103,13 @@ const handleInput = (e) => {
             <h2 class="font-semibold">Description</h2>
           </div>
           <div
-            class="outline-none ml-6 mt-2 w-[90%]"
+            class="outline-none ml-6 mt-2 w-[90%] description text-[14px]"
             role="textbox"
             contenteditable
+            data-placeholder="Add description"
+            id="description"
+            @input="handleInput"
           >
-            <span v-if="!task.description">Add</span>
             {{ task.description }}
           </div>
         </div>
@@ -165,4 +173,9 @@ const handleInput = (e) => {
   >
 </template>
 
-<style scoped></style>
+<style scoped>
+.description:empty::before {
+  content: attr(data-placeholder);
+  color: #888;
+}
+</style>

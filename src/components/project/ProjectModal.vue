@@ -56,12 +56,14 @@ const handleCreateProject = async () => {
 const handleUpdateProject = async () => {
   loading.value = true;
   try {
-    const res = await projectService.update(props.updateProjectId, newProject);
+    let res = await projectService.update(props.updateProjectId, newProject);
     projectStore.setProjects(
       projectStore.projects.map((project) =>
         project._id === props.updateProjectId ? res.data.project : project
       )
     );
+    res = await projectService.getPinned();
+    projectStore.setPinnedProjects(res.data.projects);
     showModal.value = false;
   } catch (error) {
     console.log(error);

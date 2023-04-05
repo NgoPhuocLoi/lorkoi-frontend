@@ -9,11 +9,13 @@ import { useRoute } from "vue-router";
 import Draggable from "vuedraggable";
 import ConfirmModal from "../../components/common/ConfirmModal.vue";
 import DetailTaskModal from "../../components/project/DetailTaskModal.vue";
+import { useCommonStore } from "../../stores/common";
 
 const route = useRoute();
+const commonStore = useCommonStore();
 const projectService = new ProjectService();
-const sectionService = new SectionService(route.params.projectId);
-const taskService = new TaskService(route.params.projectId);
+let sectionService = new SectionService(route.params.projectId);
+let taskService = new TaskService(route.params.projectId);
 
 const project = ref();
 const newSection = ref("");
@@ -36,11 +38,26 @@ watch(chosenSectionId, () => {
   )?.title;
 });
 
+watch(route, async () => {
+  if (route.params.projectId) {
+    sectionService = new SectionService(route.params.projectId);
+    taskService = new TaskService(route.params.projectId);
+    try {
+      const res = await projectService.getOne(route.params.projectId);
+      project.value = res.data.project;
+      sections.value = res.data.project.sections;
+      commonStore.setHeaderContent({ text: res.data.project.name, icon: null });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+});
 onMounted(async () => {
   try {
     const res = await projectService.getOne(route.params.projectId);
     project.value = res.data.project;
     sections.value = res.data.project.sections;
+    commonStore.setHeaderContent({ text: res.data.project.name, icon: null });
   } catch (error) {
     console.log(error);
   }
@@ -184,6 +201,7 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
         </div>
 
         <Draggable
+          v-if="section.tasks.length > 0"
           :list="section.tasks"
           item-key="id"
           ghost-class="ghost"
@@ -209,10 +227,16 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
               >
                 <div class="pb-7">{{ element.title }}</div>
 
-                <div class="flex">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span
+                      v-if="element.description"
+                      class="pi pi-book text-gray-500"
+                    ></span>
+                  </div>
                   <Avatar
-                    class="ml-auto"
-                    label="A"
+                    icon="pi pi-user"
+                    class="text-gray-500"
                     shape="circle"
                     size="small"
                   />
@@ -220,6 +244,10 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
               </div></div
           ></template>
         </Draggable>
+
+        <span v-else class="text-gray-500 text-[15px] italic mt-5 text-center"
+          >Nothing here yet.</span
+        >
       </div>
 
       <form class="flex flex-col" @submit.prevent="handleAddSection">

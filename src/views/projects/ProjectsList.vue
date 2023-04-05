@@ -3,22 +3,25 @@ import ProjectModel from "@/components/project/ProjectModal.vue";
 import ProjectService from "@/services/project.service";
 import AvatarGroup from "primevue/avatargroup";
 import Column from "primevue/column";
-import ConfirmDialog from "primevue/confirmdialog";
 import DataTable from "primevue/datatable";
-import { useConfirm } from "primevue/useconfirm";
-import { onMounted, ref, watch, computed } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import ConfirmModal from "../../components/common/ConfirmModal.vue";
 import { useProjectStore } from "../../stores/project";
+import { useCommonStore } from "../../stores/common";
 
 const projectService = new ProjectService();
 
 const router = useRouter();
 const projectStore = useProjectStore();
-const confirm = useConfirm();
+const commonStore = useCommonStore();
 
-const visible = ref(false);
-const updateProjectId = ref();
+const chosenProjectId = ref();
 const searchText = ref("");
+const showModals = reactive({
+  editProject: false,
+  deleteProject: false,
+});
 
 const projects = computed(() => {
   if (!searchText) return projectStore.projects;
@@ -28,6 +31,7 @@ const projects = computed(() => {
 });
 
 onMounted(async () => {
+  commonStore.setHeaderContent({ text: "Project List", icon: "pi-folder" });
   try {
     const res = await projectService.getAll();
     projectStore.setProjects(res.data.projects);
@@ -41,35 +45,38 @@ watch(selected, () => {
   router.push("/workspace/projects/" + selected.value._id);
 });
 
-const handleDelete = (e) => {
-  confirm.require({
-    message: "Do you want to delete this project?",
-    header: "Delete Confirmation",
-    icon: "pi pi-info-circle",
-    acceptClass: "p-button-danger",
-    accept: async () => {
-      const projectId = e.target.id;
-      await projectService.delete(projectId);
-      projectStore.setProjects(
-        projectStore.projects.filter((project) => project._id !== projectId)
-      );
-    },
-  });
+const handleDelete = async () => {
+  try {
+    await projectService.delete(chosenProjectId.value);
+    projectStore.setProjects(
+      projectStore.projects.filter(
+        (project) => project._id !== chosenProjectId.value
+      )
+    );
+    const res = await projectService.getPinned();
+    projectStore.setPinnedProjects(res.data.projects);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-const openModal = (projectId) => {
-  updateProjectId.value = projectId;
-  visible.value = true;
+const openModal = (e) => {
+  console.log(123);
+  showModals[e.target.dataset.type] = true;
+  console.log(showModals);
+  chosenProjectId.value = e.target.id;
 };
 
 const handlePinProject = async (projectId, value) => {
   try {
-    const res = await projectService.update(projectId, { pinned: value });
+    await projectService.update(projectId, { pinned: value });
     projectStore.setProjects(
       projectStore.projects.map((project) =>
-        project._id === projectId ? res.data.project : project
+        project._id === projectId ? { ...project, pinned: value } : project
       )
     );
+    const res = await projectService.getPinned();
+    projectStore.setPinnedProjects(res.data.projects);
   } catch (error) {
     console.log(error);
   }
@@ -78,12 +85,15 @@ const handlePinProject = async (projectId, value) => {
 
 <template>
   <div class="p-5">
-    <Button
-      @click="openModal()"
-      label="New Project"
+    <button
+      @click="openModal"
       icon="pi pi-plus"
-      size="small"
-    />
+      class="px-[10px] py-[5px] bg-[#4990E2] rounded-md text-white font-semibold text-[14px] flex items-center"
+      data-type="editProject"
+    >
+      <span class="pi pi-plus mr-[6px] mt-[1px]" style="font-size: 10px"></span>
+      New Project
+    </button>
     <div class="p-input-icon-left my-5">
       <i class="pi pi-search" />
       <InputText type="text" placeholder="Search" v-model="searchText" />
@@ -95,7 +105,7 @@ const handlePinProject = async (projectId, value) => {
       tableStyle="min-width: 50rem"
       class="p-datatable-sm"
       selectionMode="single"
-      v-if="projectStore.projects.length > 0"
+      v-if="projects.length > 0"
     >
       <Column field="name" header="Project name">
         <template #body="slot">
@@ -111,7 +121,7 @@ const handlePinProject = async (projectId, value) => {
               "
             ></span>
             <div
-              class="w-[20px] rounded-full h-[20px] ml-4 mr-2"
+              class="w-[20px] rounded-full h-[20px] ml-4 mr-2 flex-shrink-0"
               :style="{ backgroundColor: '#' + slot.data.color }"
             ></div>
             <p>{{ slot.data.name }}</p>
@@ -137,15 +147,17 @@ const handlePinProject = async (projectId, value) => {
             <div class="flex gap-2 mr-3">
               <span
                 :id="slot.data._id"
+                data-type="editProject"
                 class="pi pi-file-edit cursor-pointer hover:text-blue-500"
-                @click.stop="(e) => openModal(e.target.id)"
+                @click.stop="openModal"
                 v-tooltip.top="'Edit Project'"
               ></span>
 
               <span
                 :id="slot.data._id"
+                data-type="deleteProject"
                 class="pi pi-trash cursor-pointer hover:text-red-500"
-                @click.stop="handleDelete"
+                @click.stop="openModal"
                 v-tooltip.top="'Delete Project'"
               ></span>
             </div>
@@ -154,8 +166,21 @@ const handlePinProject = async (projectId, value) => {
     </DataTable>
   </div>
 
-  <ProjectModel v-model:visible="visible" :updateProjectId="updateProjectId" />
-  <ConfirmDialog></ConfirmDialog>
+  <ProjectModel
+    v-model:visible="showModals.editProject"
+    :updateProjectId="chosenProjectId"
+  />
+  <ConfirmModal
+    :handler="handleDelete"
+    :danger="true"
+    v-model:status="showModals.deleteProject"
+    :label-btn="'Delete'"
+    :header="'Delete Project'"
+  >
+    <h1>
+      This project and all related actions will be deleted permanently.
+    </h1></ConfirmModal
+  >
 </template>
 
 <style scoped>
@@ -166,5 +191,11 @@ button.p-button.p-button-sm {
 
 input.p-inputtext {
   padding: 6px 40px;
+}
+</style>
+
+<style>
+tr.p-selectable-row td:first-child {
+  overflow: hidden;
 }
 </style>

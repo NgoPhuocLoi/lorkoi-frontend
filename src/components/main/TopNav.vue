@@ -6,9 +6,11 @@ import TabPanel from "primevue/tabpanel";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
+import { useCommonStore } from "@/stores/common";
 
 const router = useRouter();
 const userStore = useUserStore();
+const commonStore = useCommonStore();
 const visible = ref(false);
 const op = ref(null);
 const showUserMenu = ref(null);
@@ -31,12 +33,15 @@ const handleLogout = () => {
   <div
     class="flex justify-between items-center h-[46px] pl-[32px] pr-[16px] border flex-shrink-0"
   >
-    <div class="flex items-center">
-      <div class="text-[20px] leading-none mt-[4px] mr-2">
-        <ion-icon name="folder-outline"></ion-icon>
-      </div>
-      <span class="leading-none text-[17px] font-semibold"
-        >My actions {{ userStore.user.name }}</span
+    <div class="flex items-center overflow-hidden pr-4">
+      <span
+        v-if="commonStore.headerContent.icon"
+        :class="`pi ${commonStore.headerContent.icon} mr-2`"
+        style="font-size: 20px"
+      ></span>
+      <span
+        class="leading-none text-[17px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
+        >{{ commonStore.headerContent.text }}</span
       >
     </div>
 
