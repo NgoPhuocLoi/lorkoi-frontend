@@ -3,6 +3,7 @@ import ProgressSpinner from "primevue/progressspinner";
 import { useRouter } from "vue-router";
 import { ref, reactive } from "vue";
 import authService from "@/services/auth.service";
+import { socket } from "@/services/socket";
 const AuthService = new authService();
 
 const router = useRouter();
@@ -27,6 +28,7 @@ const handleLogin = async () => {
   try {
     const res = await AuthService.login(user);
     localStorage["token"] = res.data.tokens.accessToken;
+    socket.connect();
     router.push("/");
   } catch (error) {
     const errors = error.response?.data.errors;

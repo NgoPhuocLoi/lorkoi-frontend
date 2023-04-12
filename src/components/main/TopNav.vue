@@ -7,6 +7,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { useCommonStore } from "@/stores/common";
+import { socket } from "@/services/socket";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -25,6 +26,7 @@ const toggleUserMenu = (e) => {
 
 const handleLogout = () => {
   localStorage.removeItem("token");
+  socket.disconnect();
   router.push("/auth/login");
 };
 </script>
@@ -40,7 +42,7 @@ const handleLogout = () => {
         style="font-size: 20px"
       ></span>
       <span
-        class="leading-none text-[17px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
+        class="text-[17px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
         >{{ commonStore.headerContent.text }}</span
       >
     </div>

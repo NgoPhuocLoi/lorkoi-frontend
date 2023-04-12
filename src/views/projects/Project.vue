@@ -179,7 +179,7 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
       <div
         v-for="(section, index) in sections"
         :key="section._id"
-        class="w-[255px] flex-shrink-0 max-h-full flex flex-col"
+        class="w-[255px] flex-shrink-0 max-h-full flex flex-col relative"
       >
         <div class="flex items-center justify-between">
           <h4 class="font-semibold">{{ section.title }}</h4>
@@ -201,7 +201,6 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
         </div>
 
         <Draggable
-          v-if="section.tasks.length > 0"
           :list="section.tasks"
           item-key="id"
           ghost-class="ghost"
@@ -245,7 +244,9 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
           ></template>
         </Draggable>
 
-        <span v-else class="text-gray-500 text-[15px] italic mt-5 text-center"
+        <span
+          v-if="section.tasks.length == 0"
+          class="text-gray-500 text-[15px] italic mt-5 text-center absolute top-[80px] left-[50%] translate-x-[-50%]"
           >Nothing here yet.</span
         >
       </div>

@@ -1,24 +1,44 @@
 <script setup>
-import { useRoute } from "vue-router";
-import { computed, ref, onMounted } from "vue";
-import { useProjectStore } from "@/stores/project";
 import ProjectService from "@/services/project.service";
+import RoomService from "@/services/room.service";
+import { socket } from "@/services/socket.js";
+import UserService from "@/services/user.service";
+import { useProjectStore } from "@/stores/project";
+import { useUserStore } from "@/stores/user";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import ChatList from "../chat/ChatList.vue";
 
 const route = useRoute();
 const projectStore = useProjectStore();
+const userStore = useUserStore();
 const projectService = new ProjectService();
+const roomService = new RoomService();
+const userService = new UserService();
 
 let currentLink = ref(route.fullPath.split("/").at(-1));
+
+const users = ref([]);
 
 onMounted(async () => {
   try {
     const res = await projectService.getPinned();
     projectStore.setPinnedProjects(res.data.projects);
+
+    socket.emit("addUser", userStore.user._id);
   } catch (error) {
     console.log(error);
   }
 });
 
+onMounted(async () => {
+  try {
+    const res = await userService.getAllUsers();
+    users.value = res.data.users;
+  } catch (error) {
+    console.log(error);
+  }
+});
 const changeLink = (link) => (currentLink.value = link);
 </script>
 
@@ -31,7 +51,7 @@ const changeLink = (link) => (currentLink.value = link);
         class="w-[80px]"
       />
     </div>
-
+    <!-- Component -->
     <div class="text-white">
       <RouterLink
         to="/workspace/actions"
@@ -82,6 +102,11 @@ const changeLink = (link) => (currentLink.value = link);
       <span v-else class="text-[14px] text-gray-400 font-semibold ml-3"
         >Nothing pinned yet.</span
       >
+    </div>
+
+    <!-- Component -->
+    <div class="text-white">
+      <ChatList :users="users.filter((u) => u._id !== userStore.user._id)" />
     </div>
   </div>
 </template>

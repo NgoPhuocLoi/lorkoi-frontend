@@ -6,10 +6,15 @@ export const useCommonStore = defineStore("common", () => {
     text: "",
     icon: null,
   });
+  const showChatPopper = ref(true);
 
   const setHeaderContent = (payload) => {
     headerContent.value = payload;
   };
 
-  return { headerContent, setHeaderContent };
+  const setShowChatPopper = (payload) => {
+    showChatPopper.value = payload;
+  };
+
+  return { headerContent, setHeaderContent, showChatPopper, setShowChatPopper };
 });

@@ -8,7 +8,7 @@ import { useUserStore } from "../stores/user";
 import store from "../stores";
 
 const userStore = useUserStore(store);
-const UserService = new userService({ needAuth: true });
+const UserService = new userService();
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
