@@ -1,23 +1,25 @@
 <script setup>
+import SubTaskService from "@/services/subtask.service";
+import TaskService from "@/services/task.service";
 import Dialog from "primevue/dialog";
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import TaskService from "@/services/task.service";
 import ConfirmModal from "../common/ConfirmModal.vue";
 
 let timer;
 const props = defineProps(["visible", "chosenTask"]);
 const showModal = ref(props.visible);
 const emit = defineEmits(["update:visible", "deleted-task", "updated-task"]);
-const inputValue = ref({
-  title: "",
-});
+const subTaskInput = ref("");
+const newSubTaskTitle = ref("");
 const task = ref(props.chosenTask);
 const showDeleteConfirm = ref(false);
+const subTaskToUpdate = ref(null);
 
 const route = useRoute();
 
 const taskService = new TaskService(route.params.projectId);
+const subTaskService = new SubTaskService();
 
 watch(props, () => {
   showModal.value = props.visible;
@@ -51,6 +53,48 @@ const handleInput = (e) => {
       [e.target.id]: e.target.innerText,
     });
   }, 600);
+};
+
+const handleAddSubTask = async () => {
+  if (!subTaskInput.value.trim()) return;
+  try {
+    const res = await subTaskService.create({
+      task: task.value._id,
+      title: subTaskInput.value,
+    });
+    task.value.subTasks.push(res.data.subTask);
+    subTaskInput.value = "";
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleDeleteSubTask = async (subTaskId) => {
+  try {
+    await subTaskService.delete(subTaskId);
+    task.value.subTasks = task.value.subTasks.filter(
+      (st) => st._id !== subTaskId
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleUpdateSubTask = async (subTaskId, newData) => {
+  try {
+    const res = await subTaskService.update(subTaskId, newData);
+    task.value.subTasks = task.value.subTasks.map((st) =>
+      st._id === subTaskId ? res.data.subTask : st
+    );
+    subTaskToUpdate.value = null;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleActiveUpdate = (subtask) => {
+  subTaskToUpdate.value = subtask._id;
+  newSubTaskTitle.value = subtask.title;
 };
 </script>
 
@@ -119,43 +163,96 @@ const handleInput = (e) => {
             <span class="pi pi-list mt-[4px] mr-2"></span>
             <h2 class="font-semibold">Subtasks</h2>
           </div>
-          <div class="flex flex-col gap-4 mt-3">
-            <div class="flex items-center">
-              <span class="pi pi-check-circle mr-3 text-gray-400"></span>
-              <input
-                type="text"
-                class="outline-none w-[90%] text-[14px]"
-                value="Do domething"
-              />
+          <div class="flex flex-col mt-3">
+            <div v-for="subTask in task.subTasks">
+              <div
+                :key="subTask._id"
+                v-if="subTask._id !== subTaskToUpdate"
+                class="flex items-center hover:bg-gray-100 p-2"
+              >
+                <span
+                  :class="`pi pi-check-circle mr-3 ${
+                    subTask.completed ? 'text-green-500' : 'text-gray-400'
+                  } cursor-pointer`"
+                  v-tooltip.top="'Completed'"
+                  @click="
+                    handleUpdateSubTask(subTask._id, {
+                      completed: !subTask.completed,
+                    })
+                  "
+                ></span>
+                <input
+                  type="text"
+                  :class="`outline-none w-[90%] text-[14px] disabled:bg-transparent ${
+                    subTask.completed ? 'line-through' : ''
+                  }`"
+                  :value="subTask.title"
+                  disabled
+                />
+
+                <div class="flex gap-2">
+                  <span
+                    class="pi pi-pencil text-gray-400 hover:text-blue-700 cursor-pointer"
+                    style="font-size: 13px"
+                    v-tooltip.top="'Edit'"
+                    @click="handleActiveUpdate(subTask)"
+                  ></span>
+                  <span
+                    class="pi pi-trash text-gray-400 hover:text-red-500 cursor-pointer"
+                    style="font-size: 13px"
+                    v-tooltip.top="'Delete'"
+                    @click="handleDeleteSubTask(subTask._id)"
+                  ></span>
+                </div>
+              </div>
+
+              <div v-else class="hover:bg-gray-100 p-2">
+                <input
+                  type="text"
+                  :class="` pl-1 py-1 outline-none w-[90%] text-[14px] disabled:bg-transparent border ml-7 mr-2`"
+                  v-model="newSubTaskTitle"
+                />
+
+                <div class="flex gap-2 ml-7 text-[14px] mt-2">
+                  <button
+                    class="py-1 px-2 rounded-sm text-white border bg-blue-500 hover:shadow-md"
+                    @click="
+                      handleUpdateSubTask(subTask._id, {
+                        title: newSubTaskTitle,
+                      })
+                    "
+                  >
+                    Save
+                  </button>
+
+                  <button
+                    class="py-1 px-2 rounded-sm border border bg-gray-100 hover:shadow-md"
+                    @click="subTaskToUpdate = null"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div class="flex items-center">
-              <span class="pi pi-check-circle mr-3 text-gray-400"></span>
+            <div class="flex items-center hover:bg-gray-100 p-2">
               <input
                 type="text"
-                class="outline-none w-[90%] text-[14px]"
-                value="Do domething"
-              />
-            </div>
-
-            <div class="flex items-center">
-              <span class="pi pi-check-circle mr-3 text-gray-400"></span>
-              <input
-                type="text"
-                class="outline-none w-[90%] text-[14px]"
-                value="Do domething"
-              />
-            </div>
-
-            <div class="flex items-center">
-              <span class="pi pi-check-circle mr-3 text-gray-400"></span>
-              <input
-                type="text"
-                class="outline-none w-[90%] text-[14px]"
-                value="Do domething"
+                :class="`outline-none w-[90%] text-[14px] ml-7 bg-transparent
+                `"
+                placeholder="Add new subtask"
+                v-model="subTaskInput"
+                @keydown.enter="handleAddSubTask"
+                @blur="handleAddSubTask"
               />
             </div>
           </div>
+
+          <!-- <input
+            type="text"
+            class="border outline-none text-[14px] ml-7 p-2"
+            placeholder="Add new subtask"
+          /> -->
         </div>
       </div>
     </Dialog>

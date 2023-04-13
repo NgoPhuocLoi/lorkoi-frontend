@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { AuthLayout, MainLayout } from "@/layouts";
+import { AuthLayout, MainLayout, SettingLayout } from "@/layouts";
 import { Actions } from "../components/main";
 import { Login, Register } from "@/views/auth";
 import { ProjectsList, Project } from "@/views/projects";
+import { UserProfile, ChangePassword } from "@/views/setting";
 import userService from "../services/user.service";
 import { useUserStore } from "../stores/user";
 import store from "../stores";
@@ -63,6 +64,28 @@ const router = createRouter({
         {
           path: "projects/:projectId",
           component: Project,
+        },
+      ],
+    },
+    {
+      path: "/setting/user",
+      component: SettingLayout,
+      beforeEnter: async () => {
+        try {
+          const data = await UserService.getCurrentUser();
+          userStore.setUser(data.user);
+        } catch (error) {
+          return "/auth/login";
+        }
+      },
+      children: [
+        {
+          path: "profile",
+          component: UserProfile,
+        },
+        {
+          path: "change-password",
+          component: ChangePassword,
         },
       ],
     },

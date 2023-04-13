@@ -138,9 +138,14 @@ const handleLogout = () => {
         shape="circle"
         :label="userStore.user.firstName[0].toUpperCase()"
       />
-      <span class="text-[14px] ml-3 font-bold"
-        >{{ userStore.user.firstName }} {{ userStore.user.lastName }}</span
-      >
+      <div>
+        <span class="text-[14px] ml-3 font-bold block leading-none"
+          >{{ userStore.user.firstName }} {{ userStore.user.lastName }}</span
+        >
+        <span class="text-[12px] ml-3 leading-none block mt-1">{{
+          userStore.user.email
+        }}</span>
+      </div>
     </div>
 
     <div>
