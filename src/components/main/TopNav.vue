@@ -8,6 +8,7 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { useCommonStore } from "@/stores/common";
 import { socket } from "@/services/socket";
+import Avatar from "../common/Avatar.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -68,10 +69,10 @@ const handleLogout = () => {
       </div>
 
       <Avatar
+        :image="userStore.user.avatar"
         :label="userStore.user.firstName[0].toUpperCase()"
-        class="mr-2 cursor-pointer"
         size="small"
-        shape="circle"
+        class="mr-2 cursor-pointer border border-gray-400"
         @click="toggleUserMenu"
       />
     </div>
@@ -135,8 +136,10 @@ const handleLogout = () => {
   <OverlayPanel ref="showUserMenu" class="w-[250px]">
     <div class="p-3 flex items-center">
       <Avatar
-        shape="circle"
+        :image="userStore.user.avatar"
         :label="userStore.user.firstName[0].toUpperCase()"
+        size="small"
+        class="border border-gray-400"
       />
       <div>
         <span class="text-[14px] ml-3 font-bold block leading-none"
@@ -151,7 +154,9 @@ const handleLogout = () => {
     <div>
       <div class="px-4 py-2 cursor-pointer hover:bg-gray-100">
         <span class="pi pi-user mr-3 text-gray-400"></span>
-        <span class="text-[14px]">Edit profile</span>
+        <RouterLink to="/setting/user/profile" class="text-[14px]"
+          >Edit profile</RouterLink
+        >
       </div>
       <div
         class="px-4 py-2 cursor-pointer hover:bg-gray-100"

@@ -129,7 +129,7 @@ const handleAddTask = async (index) => {
       sectionId: sections.value[index]._id,
       title: newTasks.value[index],
     });
-    sections.value[index].tasks.unshift(res.data.task);
+    sections.value[index].tasks.unshift({ ...res.data.task, subTasks: [] });
     newTasks.value[index] = "";
   } catch (error) {
     console.log(error);
@@ -227,11 +227,29 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
                 <div class="pb-7">{{ element.title }}</div>
 
                 <div class="flex items-center justify-between">
-                  <div>
+                  <div class="flex items-center">
                     <span
                       v-if="element.description"
                       class="pi pi-book text-gray-500"
                     ></span>
+
+                    <div
+                      v-if="element.subTasks?.length > 0"
+                      class="flex items-center text-gray-500"
+                    >
+                      <span
+                        class="pi pi-list ml-2 mr-1"
+                        style="font-size: 20px"
+                      >
+                      </span>
+                      <span
+                        >{{
+                          element.subTasks?.filter(
+                            (st) => st.completed === true
+                          ).length
+                        }}/{{ element.subTasks?.length }}</span
+                      >
+                    </div>
                   </div>
                   <Avatar
                     icon="pi pi-user"

@@ -8,6 +8,7 @@ import { useUserStore } from "../../stores/user";
 import UserService from "@/services/user.service";
 import MessageService from "@/services/message.service";
 import { socket, state } from "@/services/socket";
+import Avatar from "../common/Avatar.vue";
 
 TimeAgo.addDefaultLocale(en);
 const timeAgo = new TimeAgo("en-US");
@@ -79,7 +80,11 @@ onUpdated(() => {
       class="flex justify-between items-center p-2 h-[44px] bg-white border border-t-0 border-r-0 border-l-0 border-b-1"
     >
       <div class="flex items-center">
-        <Avatar :label="user?.firstName[0]" shape="circle" class="mr-2" />
+        <Avatar
+          :image="user?.avatar"
+          :label="user?.firstName[0].toUpperCase()"
+          class="mr-2 border border-gray-400"
+        />
         <div class="flex flex-col">
           <h2 class="text-[15px] font-semibold mt-[2px]">
             {{ user?.lastName }} {{ user?.firstName }}
@@ -114,9 +119,9 @@ onUpdated(() => {
       >
         <Avatar
           v-if="message.sender !== userStore.user._id"
-          :label="user?.firstName[0]"
-          shape="circle"
-          class="flex-shrink-0 mr-2"
+          :image="user?.avatar"
+          :label="user?.firstName[0].toUpperCase()"
+          class="flex-shrink-0 mr-2 border border-gray-400"
         />
 
         <div>

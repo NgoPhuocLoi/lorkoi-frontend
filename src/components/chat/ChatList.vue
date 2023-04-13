@@ -5,6 +5,7 @@ import { useCommonStore } from "../../stores/common";
 import { useChatStore } from "../../stores/chat";
 import { useUserStore } from "../../stores/user";
 import RoomService from "@/services/room.service";
+import Avatar from "../common/Avatar.vue";
 
 const commonStore = useCommonStore();
 const chatStore = useChatStore();
@@ -37,7 +38,7 @@ onMounted(async () => {
 const roomsHaveChatted = computed(() =>
   props.users.filter((u) => chatStore.usersChatWith?.includes(u._id))
 );
-console.log(roomsHaveChatted);
+console.log(roomsHaveChatted.value);
 const changeChat = async (userId) => {
   try {
     const res = await roomService.getRoomOfUsers(userStore.user._id, userId);
@@ -64,13 +65,13 @@ const changeChat = async (userId) => {
       <div
         v-for="user in roomsHaveChatted"
         :key="user._id"
-        class="p-2 hover:bg-[rgba(255,255,255,0.1)] rounded-md cursor-pointer"
+        class="p-2 hover:bg-[rgba(255,255,255,0.1)] rounded-md cursor-pointer flex items-center"
         @click="changeChat(user._id)"
       >
         <Avatar
-          :label="user.firstName[0]"
-          shape="circle"
-          :class="`relative
+          :image="user.avatar"
+          :label="user.firstName[0].toUpperCase()"
+          :class="`flex-shrink-0 relative border border-gray-400
         ${state.onlineUsersId.includes(user._id) ? onlineStyle : ''}`"
         />
         <span class="ml-2">{{ user.lastName }} {{ user.firstName }}</span>

@@ -4,11 +4,12 @@
   <div
     class="w-full h-full bg-gray-100 flex flex-col items-center justify-start"
   >
-    <button
+    <RouterLink
+      to="/workspace/projects"
       class="px-3 py-1 text-[14px] rounded-2xl mt-4 hover:shadow-lg border shadow bg-blue-100 text-blue-700 font-semibold"
     >
       ⬅️ Back to Projects
-    </button>
+    </RouterLink>
 
     <div class="w-full mt-5">
       <span class="text-left text-[14px] px-4 font-semibold text-gray-700"

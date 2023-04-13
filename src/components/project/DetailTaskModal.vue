@@ -215,12 +215,13 @@ const handleActiveUpdate = (subtask) => {
 
                 <div class="flex gap-2 ml-7 text-[14px] mt-2">
                   <button
-                    class="py-1 px-2 rounded-sm text-white border bg-blue-500 hover:shadow-md"
+                    class="py-1 px-2 rounded-sm text-white border bg-blue-500 hover:shadow-md disabled:bg-blue-200 disabled:hover:shadow-none"
                     @click="
                       handleUpdateSubTask(subTask._id, {
                         title: newSubTaskTitle,
                       })
                     "
+                    :disabled="!newSubTaskTitle.trim()"
                   >
                     Save
                   </button>

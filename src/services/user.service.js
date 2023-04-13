@@ -19,6 +19,11 @@ class UserService {
     const res = await this.api.get("/all");
     return res.data;
   }
+
+  async update(userId, newData) {
+    const res = await this.api.put(`${userId}`, newData);
+    return res.data;
+  }
 }
 
 export default UserService;

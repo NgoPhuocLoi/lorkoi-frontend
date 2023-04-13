@@ -44,13 +44,13 @@ const changeLink = (link) => (currentLink.value = link);
 
 <template>
   <div class="w-full h-screen bg-[#0D1B3E]">
-    <!-- <div class="h-[46px] px-[22px] flex items-center">
+    <div class="h-[46px] px-[22px] flex items-center">
       <img
         src="https://s3.amazonaws.com/hv-static-content/hive-logo-orange-white-v1.svg"
         alt=""
         class="w-[80px]"
       />
-    </div> -->
+    </div>
     <!-- Component -->
     <div class="text-white">
       <RouterLink
