@@ -1,15 +1,15 @@
-import { createRouter, createWebHistory } from "vue-router";
 import { AuthLayout, MainLayout, SettingLayout } from "@/layouts";
-import { Actions } from "../components/main";
+import { UserService } from "@/services";
+import { useUserStore } from "@/stores";
 import { Login, Register } from "@/views/auth";
-import { ProjectsList, Project } from "@/views/projects";
-import { UserProfile, ChangePassword } from "@/views/setting";
-import userService from "../services/user.service";
-import { useUserStore } from "../stores/user";
+import { Project, ProjectsList } from "@/views/projects";
+import { ChangePassword, UserProfile } from "@/views/setting";
+import { createRouter, createWebHistory } from "vue-router";
+import { Actions } from "../components/main";
 import store from "../stores";
 
 const userStore = useUserStore(store);
-const UserService = new userService();
+const userService = new UserService();
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,7 +23,7 @@ const router = createRouter({
       component: AuthLayout,
       beforeEnter: async () => {
         try {
-          const user = await UserService.getCurrentUser();
+          const user = await userService.getCurrentUser();
           if (user) return "/";
         } catch (error) {
           console.log(error);
@@ -43,10 +43,10 @@ const router = createRouter({
     {
       path: "/workspace",
       component: MainLayout,
-      redirect: "/workspace/actions",
+      redirect: "/workspace/projects",
       beforeEnter: async () => {
         try {
-          const data = await UserService.getCurrentUser();
+          const data = await userService.getCurrentUser();
           userStore.setUser(data.user);
         } catch (error) {
           return "/auth/login";
@@ -72,7 +72,7 @@ const router = createRouter({
       component: SettingLayout,
       beforeEnter: async () => {
         try {
-          const data = await UserService.getCurrentUser();
+          const data = await userService.getCurrentUser();
           userStore.setUser(data.user);
         } catch (error) {
           return "/auth/login";
@@ -88,6 +88,13 @@ const router = createRouter({
           component: ChangePassword,
         },
       ],
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "NotFound",
+      beforeEnter: () => {
+        return "/workspace/projects";
+      },
     },
   ],
 });

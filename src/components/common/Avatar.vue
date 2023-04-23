@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps(["label", "image", "size", "shape"]);
+const props = defineProps(["label", "image", "size", "shape", "icon"]);
 </script>
 
 <template>
@@ -8,13 +8,20 @@ const props = defineProps(["label", "image", "size", "shape"]);
     :label="props.label"
     :shape="props.shape || 'circle'"
     :size="props.size || 'small'"
+    :icon="props.icon"
   />
   <Avatar
     v-else
     :image="props.image"
     :shape="props.shape || 'circle'"
     :size="props.size || 'small'"
+    :icon="props.icon"
   />
 </template>
 
-<style scoped></style>
+<style scoped>
+.p-avatar-group .p-avatar {
+  border: 1px solid #888;
+  background: #ddd;
+}
+</style>

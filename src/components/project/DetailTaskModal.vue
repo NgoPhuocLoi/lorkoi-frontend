@@ -1,10 +1,10 @@
 <script setup>
-import SubTaskService from "@/services/subtask.service";
-import TaskService from "@/services/task.service";
+import { SubTaskService, TaskService } from "@/services";
 import Dialog from "primevue/dialog";
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import ConfirmModal from "../common/ConfirmModal.vue";
+import { socket, state } from "@/services/socket";
 
 let timer;
 const props = defineProps(["visible", "chosenTask"]);
@@ -24,6 +24,31 @@ const subTaskService = new SubTaskService();
 watch(props, () => {
   showModal.value = props.visible;
   task.value = props.chosenTask;
+});
+
+watch(state, () => {
+  if (state.incomingSubTask) {
+    const actions = {
+      add: () => {
+        task.value?.subTasks.push(state.incomingSubTask);
+      },
+      update: () => {
+        if (task.value)
+          task.value.subTasks = task.value?.subTasks.map((st) =>
+            st._id === state.incomingSubTask._id ? state.incomingSubTask : st
+          );
+      },
+      delete: () => {
+        if (task.value)
+          task.value.subTasks = task.value?.subTasks.filter(
+            (st) => st._id !== state.incomingSubTask._id
+          );
+      },
+    };
+
+    actions[state.incomingSubTask.action]();
+    state.incomingSubTask = null;
+  }
 });
 
 const handleClose = () => {
@@ -63,6 +88,11 @@ const handleAddSubTask = async () => {
       title: subTaskInput.value,
     });
     task.value.subTasks.push(res.data.subTask);
+    socket.emit("handleSubTask", {
+      subTask: { ...res.data.subTask, project: route.params.projectId },
+      action: "add",
+    });
+    emit("updated-task", { subTasks: task.value.subTasks });
     subTaskInput.value = "";
   } catch (error) {
     console.log(error);
@@ -75,6 +105,11 @@ const handleDeleteSubTask = async (subTaskId) => {
     task.value.subTasks = task.value.subTasks.filter(
       (st) => st._id !== subTaskId
     );
+    socket.emit("handleSubTask", {
+      subTask: { _id: subTaskId, project: route.params.projectId },
+      action: "delete",
+    });
+    emit("updated-task", { subTasks: task.value.subTasks });
   } catch (error) {
     console.log(error);
   }
@@ -86,6 +121,11 @@ const handleUpdateSubTask = async (subTaskId, newData) => {
     task.value.subTasks = task.value.subTasks.map((st) =>
       st._id === subTaskId ? res.data.subTask : st
     );
+    socket.emit("handleSubTask", {
+      subTask: { ...res.data.subTask, project: route.params.projectId },
+      action: "update",
+    });
+    emit("updated-task", { subTasks: task.value.subTasks });
     subTaskToUpdate.value = null;
   } catch (error) {
     console.log(error);

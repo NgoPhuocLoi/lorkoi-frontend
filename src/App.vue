@@ -1,9 +1,11 @@
 <script setup>
 import { RouterView } from "vue-router";
+import Toast from "primevue/toast";
 </script>
 
 <template>
   <RouterView />
+  <Toast position="bottom-right" />
 </template>
 
 <style>
@@ -42,5 +44,9 @@ input.p-colorpicker-preview {
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-right: 20px;
+}
+
+.p-toast-message-content {
+  padding: 10px;
 }
 </style>

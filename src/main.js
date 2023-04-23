@@ -15,6 +15,7 @@ import Button from "primevue/button";
 import Avatar from "primevue/avatar";
 import ConfirmationService from "primevue/confirmationservice";
 import Tooltip from "primevue/tooltip";
+import ToastService from "primevue/toastservice";
 const app = createApp(App);
 
 // app.config.compilerOptions.isCustomElement = (tag) => {
@@ -26,6 +27,7 @@ app.component("Avatar", Avatar);
 app.directive("tooltip", Tooltip);
 app.use(PrimeVue);
 app.use(ConfirmationService);
+app.use(ToastService);
 
 app.use(store);
 app.use(router);

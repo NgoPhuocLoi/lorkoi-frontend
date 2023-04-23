@@ -1,13 +1,15 @@
 <script setup>
 import Dialog from "primevue/dialog";
 import { avatars } from "@/data/avatar.json";
-import { useUserStore } from "@/stores/user";
+import { useUserStore } from "@/stores";
 import { reactive, ref } from "vue";
-import UserService from "@/services/user.service";
+import { UserService } from "@/services";
 import Avatar from "@/components/common/Avatar.vue";
+import useToast from "@/hooks/useToast";
 
 const userStore = useUserStore();
 const userService = new UserService();
+const { showSuccessToast } = useToast();
 
 const user = ref(userStore.user);
 let timer;
@@ -29,6 +31,7 @@ const handleUpdate = async (e) => {
         ...userStore.user,
         [e.target.name]: e.target.value,
       });
+      showSuccessToast("Profile is updated!");
     } catch (error) {
       console.log(error);
       const errors = error.response?.data.errors;

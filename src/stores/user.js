@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
-import { reactive, ref } from "vue";
-
-export const useUserStore = defineStore("user", () => {
+import { ref } from "vue";
+const useUserStore = defineStore("user", () => {
   const user = ref({});
   const allUsers = ref([]);
   const setUser = (payload) => {
@@ -14,3 +13,4 @@ export const useUserStore = defineStore("user", () => {
 
   return { user, setUser, allUsers, setAllUsers };
 });
+export default useUserStore;

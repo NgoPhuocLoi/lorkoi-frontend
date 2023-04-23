@@ -1,10 +1,10 @@
 <script setup>
-import ProgressSpinner from "primevue/progressspinner";
-import { useRouter } from "vue-router";
-import { ref, reactive } from "vue";
-import authService from "@/services/auth.service";
+import { AuthService } from "@/services";
 import { socket } from "@/services/socket";
-const AuthService = new authService();
+import ProgressSpinner from "primevue/progressspinner";
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+const authService = new AuthService();
 
 const router = useRouter();
 
@@ -26,7 +26,7 @@ const resetErr = (e) => {
 const handleLogin = async () => {
   loading.value = true;
   try {
-    const res = await AuthService.login(user);
+    const res = await authService.login(user);
     localStorage["token"] = res.data.tokens.accessToken;
     socket.connect();
     router.push("/");
@@ -46,55 +46,58 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="px-[10px]">
-    <div class="mt-7">
-      <div class="p-float-label">
-        <InputText
-          id="email"
-          type="text"
-          v-model="user.email"
-          class="w-full"
-          @input="resetErr"
-        />
-        <label for="email">Email</label>
+  <div class="p-7 border rounded-md shadow-md bg-white">
+    <h2 class="text-[30px] font-bold text-center">Login</h2>
+    <div class="px-[10px]">
+      <div class="mt-7">
+        <div class="p-float-label">
+          <InputText
+            id="email"
+            type="text"
+            v-model="user.email"
+            class="w-full"
+            @input="resetErr"
+          />
+          <label for="email">Email</label>
+        </div>
+        <span class="error-msg">{{ err.email }}</span>
       </div>
-      <span class="error-msg">{{ err.email }}</span>
+
+      <div class="my-7">
+        <div class="p-float-label">
+          <InputText
+            id="password"
+            :type="'password'"
+            v-model="user.password"
+            class="w-full"
+            @input="resetErr"
+          />
+          <label for="password">Password</label>
+        </div>
+        <span class="error-msg">{{ err.password }}</span>
+      </div>
+
+      <Button
+        @click="handleLogin"
+        label="Sign up"
+        size="small"
+        class="w-full flex items-center justify-center"
+        :disabled="loading"
+        ><ProgressSpinner
+          v-if="loading"
+          style="width: 20px; height: 20px"
+          strokeWidth="6"
+        />
+        <span v-else>Login</span></Button
+      >
     </div>
 
-    <div class="my-7">
-      <div class="p-float-label">
-        <InputText
-          id="password"
-          :type="'password'"
-          v-model="user.password"
-          class="w-full"
-          @input="resetErr"
-        />
-        <label for="password">Password</label>
-      </div>
-      <span class="error-msg">{{ err.password }}</span>
-    </div>
-
-    <Button
-      @click="handleLogin"
-      label="Sign up"
-      size="small"
-      class="w-full flex items-center justify-center"
-      :disabled="loading"
-      ><ProgressSpinner
-        v-if="loading"
-        style="width: 20px; height: 20px"
-        strokeWidth="6"
-      />
-      <span v-else>Login</span></Button
+    <RouterLink
+      class="text-blue-500 mt-3 text-sm text-center block font-semibold hover:opacity-80"
+      to="/auth/register"
+      >Don't have an account? Sign up now!!</RouterLink
     >
   </div>
-
-  <RouterLink
-    class="text-blue-500 mt-3 text-sm text-center block font-semibold hover:opacity-80"
-    to="/auth/register"
-    >Don't have an account? Sign up now!!</RouterLink
-  >
 </template>
 
 <style scoped></style>

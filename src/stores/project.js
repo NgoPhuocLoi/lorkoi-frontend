@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-export const useProjectStore = defineStore("project", () => {
+const useProjectStore = defineStore("project", () => {
   const projects = ref([]);
   const pinnedProjects = ref([]);
 
@@ -15,3 +15,4 @@ export const useProjectStore = defineStore("project", () => {
 
   return { projects, setProjects, pinnedProjects, setPinnedProjects };
 });
+export default useProjectStore;

@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from "vue";
-import { useCommonStore } from "@/stores/common";
+import { useCommonStore } from "@/stores";
 
 const commonStore = useCommonStore();
 

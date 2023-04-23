@@ -20,8 +20,8 @@ class ProjectService {
     return res.data;
   }
 
-  async create({ name, color }) {
-    const res = await this.api.post("/", { name, color });
+  async create({ name, color, members }) {
+    const res = await this.api.post("/", { name, color, members });
     return res.data;
   }
 

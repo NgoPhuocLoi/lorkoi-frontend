@@ -10,6 +10,7 @@ const props = defineProps([
   "handler",
   "labelBtn",
   "disabledBtn",
+  "hideCancelBtn",
 ]);
 const emit = defineEmits(["update:status"]);
 const visible = ref(props.status);
@@ -44,10 +45,12 @@ const onHandler = async () => {
     :style="{ width: `${props.width || 450}px` }"
     v-on:after-hide="emit('update:status', false)"
     class="w-[300px]"
+    :closable="false"
   >
     <slot />
     <div class="flex gap-3 justify-end mt-4">
       <button
+        v-if="!props.hideCancelBtn"
         :disabled="loading"
         @click="close"
         class="py-[6px] px-3 hover:shadow-lg rounded-md border disabled:opacity-60 disabled:cursor-default"

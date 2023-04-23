@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-export const useChatStore = defineStore("chat", () => {
+const useChatStore = defineStore("chat", () => {
   const currentChat = ref(null);
   const usersChatWith = ref([]);
 
@@ -14,3 +14,4 @@ export const useChatStore = defineStore("chat", () => {
 
   return { currentChat, setCurrentChat, usersChatWith, setUsersChatWith };
 });
+export default useChatStore;

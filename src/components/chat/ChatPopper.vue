@@ -2,12 +2,10 @@
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en";
 
-import { ref, watch, onMounted, onUpdated } from "vue";
-import { useChatStore } from "../../stores/chat";
-import { useUserStore } from "../../stores/user";
-import UserService from "@/services/user.service";
-import MessageService from "@/services/message.service";
+import { MessageService, UserService } from "@/services";
 import { socket, state } from "@/services/socket";
+import { useChatStore, useUserStore } from "@/stores";
+import { onUpdated, ref, watch } from "vue";
 import Avatar from "../common/Avatar.vue";
 
 TimeAgo.addDefaultLocale(en);
@@ -42,6 +40,7 @@ watch(chatStore, async () => {
 watch(state, () => {
   if (state.incomingMessage)
     messages.value = [state.incomingMessage, ...messages.value];
+  state.incomingMessage = null;
 });
 
 const handleSendMessage = async () => {

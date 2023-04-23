@@ -1,13 +1,12 @@
 <script setup>
+import { socket } from "@/services/socket";
+import { useCommonStore, useUserStore } from "@/stores";
 import Dialog from "primevue/dialog";
 import OverlayPanel from "primevue/overlaypanel";
-import TabView from "primevue/tabview";
 import TabPanel from "primevue/tabpanel";
+import TabView from "primevue/tabview";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/user";
-import { useCommonStore } from "@/stores/common";
-import { socket } from "@/services/socket";
 import Avatar from "../common/Avatar.vue";
 
 const router = useRouter();
@@ -34,28 +33,37 @@ const handleLogout = () => {
 
 <template>
   <div
-    class="flex justify-between items-center h-[46px] pl-[32px] pr-[16px] border flex-shrink-0"
+    class="flex justify-between items-center h-[46px] pl-[20px] pr-[16px] border flex-shrink-0"
   >
-    <div class="flex items-center overflow-hidden pr-4">
+    <div class="flex items-center">
       <span
-        v-if="commonStore.headerContent.icon"
-        :class="`pi ${commonStore.headerContent.icon} mr-2`"
-        style="font-size: 20px"
+        :class="`pi pi-angle-double-right mr-3 text-gray-400 hover:text-gray-700
+                 p-1 hover:bg-gray-100 ml-[-4px] cursor-pointer`"
+        :style="{
+          fontSize: '22px',
+          display: commonStore.showSidebar ? 'none' : 'inline-block',
+        }"
+        @click="commonStore.showSidebar = true"
       ></span>
-      <span
-        class="text-[17px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
-        >{{ commonStore.headerContent.text }}</span
-      >
+      <div class="flex items-center overflow-hidden pr-4">
+        <span
+          v-if="commonStore.headerContent.icon"
+          :class="`pi ${commonStore.headerContent.icon} mr-2`"
+          style="font-size: 20px"
+        ></span>
+        <span
+          class="text-[17px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap"
+          >{{ commonStore.headerContent.text }}</span
+        >
+      </div>
     </div>
 
     <div class="flex items-center gap-3">
       <button
-        class="px-[10px] py-[6px] bg-green-100 text-green-600 flex items-center rounded-md hover:bg-green-200"
+        class="px-[10px] py-[8px] bg-green-100 text-green-600 flex items-center rounded-md hover:bg-green-200"
         @click="visible = true"
       >
-        <div class="mt-[4px] mr-1 leading-none">
-          <ion-icon name="person-add-outline"></ion-icon>
-        </div>
+        <span class="pi pi-user-plus mr-2"></span>
         <span class="text-[14px] leading-none">Invite</span>
       </button>
 
@@ -65,7 +73,7 @@ const handleLogout = () => {
         aria-haspopup="true"
         aria-controls="overlay_panel"
       >
-        <ion-icon name="notifications-outline"></ion-icon>
+        <span class="pi pi-bell text-gray-500"></span>
       </div>
 
       <Avatar
@@ -152,12 +160,13 @@ const handleLogout = () => {
     </div>
 
     <div>
-      <div class="px-4 py-2 cursor-pointer hover:bg-gray-100">
+      <RouterLink
+        to="/setting/user/profile"
+        class="px-4 py-2 cursor-pointer block hover:bg-gray-100"
+      >
         <span class="pi pi-user mr-3 text-gray-400"></span>
-        <RouterLink to="/setting/user/profile" class="text-[14px]"
-          >Edit profile</RouterLink
-        >
-      </div>
+        <span class="text-[14px]">Edit profile</span>
+      </RouterLink>
       <div
         class="px-4 py-2 cursor-pointer hover:bg-gray-100"
         @click="handleLogout"

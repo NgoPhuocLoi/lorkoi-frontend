@@ -1,10 +1,10 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
-import authService from "@/services/auth.service";
+import { AuthService } from "@/services";
 import ProgressSpinner from "primevue/progressspinner";
 
-const AuthService = new authService();
+const authService = new AuthService();
 
 const router = useRouter();
 
@@ -30,7 +30,7 @@ const err = reactive({
 const checkEmail = async () => {
   loading.value = true;
   try {
-    await AuthService.checkEmail({ email: user.email });
+    await authService.checkEmail({ email: user.email });
     check.value = true;
   } catch (error) {
     err.email = error.response?.data.errors[0].msg;
@@ -46,7 +46,7 @@ const resetErr = (e) => {
 const handleRegister = async () => {
   loading.value = true;
   try {
-    await AuthService.register(user);
+    await authService.register(user);
     router.push("/auth/login");
   } catch (error) {
     const errors = error.response?.data.errors;
@@ -64,115 +64,122 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div>
-    <div v-if="!check" class="px-[10px]">
-      <div class="p-float-label">
-        <InputText
-          id="email"
-          :type="'email'"
-          v-model="user.email"
-          class="w-full"
-          @keydown="err.email = ''"
-        />
+  <div class="p-7 border rounded-md shadow-md bg-white">
+    <h2 class="text-[30px] font-bold text-center mb-4">Register Now!</h2>
+    <div>
+      <div v-if="!check" class="px-[10px]">
+        <div class="p-float-label">
+          <InputText
+            id="email"
+            :type="'email'"
+            v-model="user.email"
+            class="w-full"
+            @keydown="err.email = ''"
+          />
 
-        <label for="email">Email</label>
+          <label for="email">Email</label>
+        </div>
+
+        <span class="error-msg block mb-2">{{ err.email }}</span>
+
+        <Button
+          @click="checkEmail"
+          class="w-full mt-5 flex items-center justify-center"
+          size="small"
+          :disabled="loading"
+          ><ProgressSpinner
+            v-if="loading"
+            style="width: 20px; height: 20px"
+            strokeWidth="6"
+          />
+          <span v-else>Next</span>
+        </Button>
       </div>
 
-      <span class="error-msg block mb-2">{{ err.email }}</span>
+      <div v-else class="px-[10px]">
+        <div class="flex justify-between">
+          <div class="w-[48%]">
+            <div class="p-float-label">
+              <InputText
+                id="firstName"
+                :type="'text'"
+                v-model="user.firstName"
+                class="w-full"
+                @input="resetErr"
+              />
+              <label for="firstName">First Name </label>
+            </div>
+            <span class="error-msg">{{ err.firstName }}</span>
+          </div>
 
-      <Button
-        @click="checkEmail"
-        class="w-full mt-5 flex items-center justify-center"
-        size="small"
-        :disabled="loading"
-        ><ProgressSpinner
-          v-if="loading"
-          style="width: 20px; height: 20px"
-          strokeWidth="6"
-        />
-        <span v-else>Next</span>
-      </Button>
-    </div>
-
-    <div v-else class="px-[10px]">
-      <div class="flex justify-between">
-        <div class="w-[48%]">
+          <div class="w-[48%]">
+            <div class="p-float-label">
+              <InputText
+                id="lastName"
+                :type="'text'"
+                v-model="user.lastName"
+                class="w-full"
+                @input="resetErr"
+              />
+              <label for="lastName">Last Name </label>
+            </div>
+            <span class="error-msg">{{ err.lastName }}</span>
+          </div>
+        </div>
+        <div class="mt-7">
           <div class="p-float-label">
             <InputText
-              id="firstName"
-              :type="'text'"
-              v-model="user.firstName"
+              id="phone"
+              type="text"
+              v-model="user.phone"
               class="w-full"
               @input="resetErr"
             />
-            <label for="firstName">First Name </label>
+            <label for="phone">Phone</label>
           </div>
-          <span class="error-msg">{{ err.firstName }}</span>
+          <span class="error-msg">{{ err.phone }}</span>
         </div>
 
-        <div class="w-[48%]">
+        <div class="my-7">
           <div class="p-float-label">
             <InputText
-              id="lastName"
-              :type="'text'"
-              v-model="user.lastName"
+              id="password"
+              :type="'password'"
+              v-model="user.password"
               class="w-full"
               @input="resetErr"
             />
-            <label for="lastName">Last Name </label>
+            <label for="password">Password</label>
           </div>
-          <span class="error-msg">{{ err.lastName }}</span>
+          <span class="error-msg">{{ err.password }}</span>
         </div>
-      </div>
-      <div class="mt-7">
-        <div class="p-float-label">
-          <InputText
-            id="phone"
-            type="text"
-            v-model="user.phone"
-            class="w-full"
-            @input="resetErr"
-          />
-          <label for="phone">Phone</label>
-        </div>
-        <span class="error-msg">{{ err.phone }}</span>
-      </div>
 
-      <div class="my-7">
-        <div class="p-float-label">
-          <InputText
-            id="password"
-            :type="'password'"
-            v-model="user.password"
-            class="w-full"
-            @input="resetErr"
+        <Button
+          @click="handleRegister"
+          label="Sign up"
+          size="small"
+          class="w-full flex items-center justify-center"
+          :disabled="loading"
+          ><ProgressSpinner
+            v-if="loading"
+            style="width: 20px; height: 20px"
+            strokeWidth="6"
           />
-          <label for="password">Password</label>
-        </div>
-        <span class="error-msg">{{ err.password }}</span>
+          <span v-else>Next</span></Button
+        >
       </div>
-
-      <Button
-        @click="handleRegister"
-        label="Sign up"
-        size="small"
-        class="w-full flex items-center justify-center"
-        :disabled="loading"
-        ><ProgressSpinner
-          v-if="loading"
-          style="width: 20px; height: 20px"
-          strokeWidth="6"
-        />
-        <span v-else>Next</span></Button
-      >
     </div>
+
+    <RouterLink
+      class="text-blue-500 mt-3 text-sm text-center block font-semibold hover:opacity-80"
+      to="/auth/login"
+      >Already have an account ? Go back to sign in.</RouterLink
+    >
   </div>
-
-  <RouterLink
-    class="text-blue-500 mt-3 text-sm text-center block font-semibold hover:opacity-80"
-    to="/auth/login"
-    >Already have an account ? Go back to sign in.</RouterLink
-  >
 </template>
 
-<style scoped></style>
+<style scoped>
+.p-button {
+  margin-top: 10px;
+}
+</style>

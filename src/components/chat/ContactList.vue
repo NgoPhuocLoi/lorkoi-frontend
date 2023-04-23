@@ -1,19 +1,19 @@
 <script setup>
-import { watch, ref, onMounted, computed } from "vue";
+import { RoomService, UserService } from "@/services";
+import { useChatStore, useCommonStore, useUserStore } from "@/stores";
+import { onMounted, ref, watch } from "vue";
 import { state } from "../../services/socket";
-import { useCommonStore } from "../../stores/common";
-import { useChatStore } from "../../stores/chat";
-import { useUserStore } from "../../stores/user";
-import RoomService from "@/services/room.service";
 import Avatar from "../common/Avatar.vue";
 
 const commonStore = useCommonStore();
 const chatStore = useChatStore();
 const userStore = useUserStore();
 const roomService = new RoomService();
+const userService = new UserService();
 const props = defineProps(["users"]);
 
 const onlineUsers = ref([]);
+const roomsHaveChatted = ref([]);
 const onlineStyle =
   "after:w-[10px] after:h-[10px] after:rounded-full after:bg-green-400 after:absolute after:top-0 after:right-0";
 watch(state, () => {
@@ -24,21 +24,29 @@ watch(state, () => {
 
 onMounted(async () => {
   try {
-    const res = await roomService.getRoomsOfUser();
-    const otherUsersId = res.data.rooms.map((room) => {
+    const res = await Promise.all([
+      userService.getAllUsers(),
+      roomService.getRoomsOfUser(),
+    ]);
+    userStore.setAllUsers(res[0].data.users);
+    const otherUsersId = res[1].data.rooms.map((room) => {
       return room.members.find((m) => m !== userStore.user._id);
     });
-
     chatStore.setUsersChatWith(otherUsersId);
+    roomsHaveChatted.value = userStore.allUsers.filter((u) =>
+      chatStore.usersChatWith?.includes(u._id)
+    );
   } catch (error) {
     console.log(error);
   }
 });
 
-const roomsHaveChatted = computed(() =>
-  props.users.filter((u) => chatStore.usersChatWith?.includes(u._id))
-);
-console.log(roomsHaveChatted.value);
+watch(chatStore, () => {
+  roomsHaveChatted.value = userStore.allUsers.filter((u) =>
+    chatStore.usersChatWith?.includes(u._id)
+  );
+});
+
 const changeChat = async (userId) => {
   try {
     const res = await roomService.getRoomOfUsers(userStore.user._id, userId);
@@ -59,9 +67,9 @@ const changeChat = async (userId) => {
 
 <template>
   <div class="p-2">
-    <h2>Rooms</h2>
+    <h2 class="text-[15px] font-semibold">Contacts</h2>
 
-    <div>
+    <div class="max-h-[280px] overflow-auto">
       <div
         v-for="user in roomsHaveChatted"
         :key="user._id"
@@ -73,26 +81,6 @@ const changeChat = async (userId) => {
           :label="user.firstName[0].toUpperCase()"
           :class="`flex-shrink-0 relative border border-gray-400
         ${state.onlineUsersId.includes(user._id) ? onlineStyle : ''}`"
-        />
-        <span class="ml-2">{{ user.lastName }} {{ user.firstName }}</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="p-2">
-    <h2>Online users</h2>
-
-    <div>
-      <div
-        v-for="user in onlineUsers"
-        :key="user._id"
-        class="p-2 hover:bg-[rgba(255,255,255,0.1)] rounded-md cursor-pointer"
-        @click="changeChat(user._id)"
-      >
-        <Avatar
-          :label="user.firstName[0]"
-          shape="circle"
-          :class="`relative ${onlineStyle}`"
         />
         <span class="ml-2">{{ user.lastName }} {{ user.firstName }}</span>
       </div>
@@ -215,3 +203,5 @@ div.p-panelmenu
   background-color: rgba(255, 255, 255, 0.2);
 }
 </style>
+
+<style scoped></style>

@@ -1,17 +1,19 @@
 <script setup>
-import ProjectService from "@/services/project.service";
-import SectionService from "@/services/section.service";
-import TaskService from "@/services/task.service";
+import { ProjectService, SectionService, TaskService } from "@/services";
+import { socket, state } from "@/services/socket";
+import { useCommonStore } from "@/stores";
 import AvatarGroup from "primevue/avatargroup";
 import OverlayPanel from "primevue/overlaypanel";
 import { onMounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Draggable from "vuedraggable";
 import ConfirmModal from "../../components/common/ConfirmModal.vue";
 import DetailTaskModal from "../../components/project/DetailTaskModal.vue";
-import { useCommonStore } from "../../stores/common";
+import { getUserById } from "../../utils";
+import Avatar from "../../components/common/Avatar.vue";
 
 const route = useRoute();
+const router = useRouter();
 const commonStore = useCommonStore();
 const projectService = new ProjectService();
 let sectionService = new SectionService(route.params.projectId);
@@ -22,11 +24,13 @@ const newSection = ref("");
 const newTasks = ref({});
 const sections = ref([]);
 const showEditMenu = ref();
+const fetchLoading = ref(false);
 
 const showModals = ref({
   confirmDelete: false,
   editSection: false,
   detailTask: false,
+  projectBeRemoved: false,
 });
 const chosenSectionId = ref();
 const chosenSectionTitle = ref("");
@@ -42,23 +46,109 @@ watch(route, async () => {
   if (route.params.projectId) {
     sectionService = new SectionService(route.params.projectId);
     taskService = new TaskService(route.params.projectId);
+    fetchLoading.value = true;
     try {
       const res = await projectService.getOne(route.params.projectId);
       project.value = res.data.project;
       sections.value = res.data.project.sections;
       commonStore.setHeaderContent({ text: res.data.project.name, icon: null });
+      fetchLoading.value = false;
     } catch (error) {
       console.log(error);
     }
   }
 });
+
+watch(state, () => {
+  if (state.incomingSection) {
+    const actions = {
+      add: () => {
+        sections.value.push(state.incomingSection);
+      },
+      update: () => {
+        sections.value = sections.value.map((section) =>
+          section._id === state.incomingSection._id
+            ? state.incomingSection
+            : section
+        );
+      },
+      delete: () => {
+        sections.value = sections.value.filter(
+          (section) => section._id !== state.incomingSection._id
+        );
+      },
+    };
+    actions[state.incomingSection.action]();
+    state.incomingSection = null;
+  }
+
+  if (state.incomingTask) {
+    const actions = {
+      add: () => {
+        sections.value[state.incomingTask.sectionIndex].tasks.unshift({
+          ...state.incomingTask,
+          subTasks: [],
+        });
+      },
+      delete: () => {
+        const section = sections.value.find(
+          (section) => section._id === state.incomingTask.sectionId
+        );
+        section.tasks = section.tasks.filter(
+          (t) => t._id !== state.incomingTask._id
+        );
+      },
+
+      update: () => {
+        const { _id, project, sectionId, ...rest } = state.incomingTask;
+        const section = sections.value.find(
+          (section) => section._id === sectionId
+        );
+        section.tasks = section.tasks.map((t) =>
+          t._id === _id ? { ...t, ...rest } : t
+        );
+      },
+
+      updatePosition: () => {
+        const { sourceSectionId, desSectionId, sourceList, desList } =
+          state.incomingTask;
+        if (sourceSectionId !== desSectionId) {
+          const sourceSection = sections.value.find(
+            (section) => section._id === sourceSectionId
+          );
+          sourceSection.tasks = sourceList;
+        }
+        const desSection = sections.value.find(
+          (section) => section._id === desSectionId
+        );
+        desSection.tasks = desList;
+      },
+    };
+
+    actions[state.incomingTask.action]();
+    state.incomingTask = null;
+  }
+
+  if (state.incomingProject && state.incomingProject.action === "delete") {
+    if (
+      route.params.projectId &&
+      route.params.projectId === state.incomingProject._id
+    ) {
+      showModals.value.projectBeRemoved = true;
+    }
+  }
+});
+
 onMounted(async () => {
+  fetchLoading.value = true;
   try {
     const res = await projectService.getOne(route.params.projectId);
     project.value = res.data.project;
     sections.value = res.data.project.sections;
     commonStore.setHeaderContent({ text: res.data.project.name, icon: null });
+    fetchLoading.value = false;
   } catch (error) {
+    router.push("/workspace/projects");
     console.log(error);
   }
 });
@@ -80,6 +170,16 @@ const checkMove = async (e) => {
       sourceSectionId,
       desSectionId,
     });
+    socket.emit("handleTask", {
+      task: {
+        sourceSectionId,
+        desSectionId,
+        sourceList,
+        desList,
+        project: route.params.projectId,
+      },
+      action: "updatePosition",
+    });
   } catch (error) {
     console.log(error);
   }
@@ -94,6 +194,7 @@ const handleAddSection = async () => {
   try {
     const res = await sectionService.create({ title: newSection.value });
     sections.value.push(res.data.section);
+    socket.emit("handleSection", { section: res.data.section, action: "add" });
     newSection.value = "";
   } catch (error) {
     console.log(error);
@@ -102,6 +203,10 @@ const handleAddSection = async () => {
 
 const handleDeleteSection = async () => {
   await sectionService.delete(chosenSectionId.value);
+  socket.emit("handleSection", {
+    section: { _id: chosenSectionId.value, project: route.params.projectId },
+    action: "delete",
+  });
   sections.value = sections.value.filter(
     (section) => section._id !== chosenSectionId.value
   );
@@ -109,7 +214,7 @@ const handleDeleteSection = async () => {
 
 const handleEditSection = async () => {
   try {
-    await sectionService.update(chosenSectionId.value, {
+    const res = await sectionService.update(chosenSectionId.value, {
       title: chosenSectionTitle.value,
     });
     sections.value = sections.value.map((section) =>
@@ -117,6 +222,10 @@ const handleEditSection = async () => {
         ? { ...section, title: chosenSectionTitle.value }
         : section
     );
+    socket.emit("handleSection", {
+      section: res.data.section,
+      action: "update",
+    });
   } catch (error) {
     console.log(error);
   }
@@ -130,6 +239,14 @@ const handleAddTask = async (index) => {
       title: newTasks.value[index],
     });
     sections.value[index].tasks.unshift({ ...res.data.task, subTasks: [] });
+    socket.emit("handleTask", {
+      task: {
+        ...res.data.task,
+        project: route.params.projectId,
+        sectionIndex: index,
+      },
+      action: "add",
+    });
     newTasks.value[index] = "";
   } catch (error) {
     console.log(error);
@@ -139,31 +256,111 @@ const handleAddTask = async (index) => {
 const onDeletedTask = ({ taskId }) => {
   const section = sections.value.find((s) => s._id === chosenSectionId.value);
   section.tasks = section.tasks.filter((t) => t._id !== taskId);
+  socket.emit("handleTask", {
+    task: {
+      _id: taskId,
+      project: route.params.projectId,
+      sectionId: chosenSectionId.value,
+    },
+    action: "delete",
+  });
 };
 
 const onUpdatedTask = ({ taskId, ...rest }) => {
-  const section = sections.value.find((s) => s._id === chosenSectionId.value);
-  section.tasks = section.tasks.map((t) =>
-    t._id === taskId ? { ...t, ...rest } : t
-  );
+  if (taskId) {
+    const section = sections.value.find((s) => s._id === chosenSectionId.value);
+    section.tasks = section.tasks.map((t) =>
+      t._id === taskId ? { ...t, ...rest } : t
+    );
+  }
+  console.log("Update");
+  socket.emit("handleTask", {
+    task: {
+      _id: chosenTask.value._id,
+      project: route.params.projectId,
+      sectionId: chosenSectionId.value,
+      ...rest,
+    },
+    action: "update",
+  });
+};
+
+const handleRedirectToProjects = () => {
+  router.push("/workspace/projects");
+  showModals.value.projectBeRemoved = false;
 };
 </script>
 
 <template>
-  <div class="h-[40px] pl-[20px] shadow flex items-center justify-between">
-    <div class="flex items-center">
-      <span class="pi pi-bookmark"></span>
-      <AvatarGroup class="ml-4">
-        <Avatar label="A" size="small" shape="circle" />
-        <Avatar label="B" size="small" shape="circle" />
-        <Avatar label="C" size="small" shape="circle" />
-        <Avatar label="D" size="small" shape="circle" />
-        <Avatar label="E" size="small" shape="circle" />
-        <Avatar label="+2" shape="circle" size="small" />
+  <div class="fixed top-[46px] z-10 w-full h-full bg-white" v-if="fetchLoading">
+    <i
+      class="pi pi-spin pi-spinner block top-[40%] absolute left-[40%]"
+      style="font-size: 2rem"
+    ></i>
+  </div>
+  <div
+    v-else
+    class="h-[40px] pl-[20px] shadow flex items-center justify-between"
+  >
+    <div class="flex items-center py-2">
+      <AvatarGroup v-if="project?.members.length <= 3">
+        <Avatar
+          :image="getUserById(project?.owner)?.avatar"
+          :label="getUserById(project?.owner)?.firstName[0]"
+          class="border p-[2px] border-gray-500"
+          v-tooltip.bottom="getUserById(project?.owner).firstName"
+        />
+        <Avatar
+          v-for="{ memberId } in project.members"
+          :key="memberId"
+          :image="getUserById(memberId)?.avatar"
+          :label="getUserById(memberId)?.firstName[0]"
+          class="border p-[2px] border-gray-500"
+          v-tooltip.bottom="getUserById(memberId).firstName"
+        />
+      </AvatarGroup>
+
+      <AvatarGroup v-else>
+        <Avatar
+          :image="getUserById(project?.owner)?.avatar"
+          :label="getUserById(project?.owner)?.firstName[0]"
+          class="border p-[2px] border-gray-500"
+          v-tooltip.bottom="getUserById(project?.owner)?.firstName"
+        />
+        <Avatar
+          :image="getUserById(project?.members[0].memberId)?.avatar"
+          :label="getUserById(project?.members[0].memberId)?.firstName[0]"
+          class="border p-[2px] border-gray-500"
+          v-tooltip.bottom="
+            getUserById(project?.members[0].memberId)?.firstName
+          "
+        />
+        <Avatar
+          :image="getUserById(project?.members[1].memberId)?.avatar"
+          :label="getUserById(project?.members[1].memberId)?.firstName[0]"
+          class="border p-[2px] border-gray-500"
+          v-tooltip.bottom="
+            getUserById(project?.members[1].memberId)?.firstName
+          "
+        />
+        <Avatar
+          :label="`+${project?.members.length - 2}`"
+          v-tooltip="
+            project?.members
+              .filter((_, index) => index > 1)
+              .map(
+                (m) =>
+                  getUserById(m.memberId)?.lastName +
+                  ' ' +
+                  getUserById(m.memberId)?.firstName
+              )
+              .join('\n')
+          "
+        />
       </AvatarGroup>
     </div>
 
-    <div>
+    <!-- <div>
       <Button
         icon="pi pi-bookmark"
         severity="secondary"
@@ -171,7 +368,7 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
         aria-label="Bookmark"
         size="small"
       />
-    </div>
+    </div> -->
   </div>
 
   <div class="flex-1 overflow-auto">
@@ -318,6 +515,19 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
   >
 
   <ConfirmModal
+    v-model:status="showModals.projectBeRemoved"
+    :header="`Oops`"
+    danger="true"
+    :handler="handleRedirectToProjects"
+    label-btn="Ok"
+    :hide-cancel-btn="true"
+    ><h1>
+      This project has been deleted by project owner, you will be redirected to
+      projects page!
+    </h1></ConfirmModal
+  >
+
+  <ConfirmModal
     v-model:status="showModals.editSection"
     :header="`Edit Section`"
     :handler="handleEditSection"
@@ -348,12 +558,6 @@ const onUpdatedTask = ({ taskId, ...rest }) => {
 </template>
 
 <style scoped>
-div.p-avatar.extra-small {
-  width: 24px;
-  font-size: 13px;
-  height: 24px;
-}
-
 button.p-button.p-button-sm {
   padding: 10px;
 }
