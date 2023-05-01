@@ -66,11 +66,12 @@ const handleInviteUsers = async () => {
 
 <template>
   <Dialog
+    class="mx-3"
     v-model:visible="showModal"
     modal
     header="Invite project members"
     @hide="emit('update:visible', false)"
-    :style="{ width: '50vw', height: '80vh' }"
+    :style="{ width: '500px', height: '80vh' }"
   >
     <div class="flex">
       <div class="p-fluid flex-1 mr-4">
@@ -151,7 +152,7 @@ const handleInviteUsers = async () => {
     </div>
   </Dialog>
 
-  <OverlayPanel ref="op" class="w-[500px] mt-[-10px]">
+  <OverlayPanel ref="op" class="w-[300px] mt-[-10px]">
     <div class="p-2">
       <div
         v-for="user in filteredUsers"

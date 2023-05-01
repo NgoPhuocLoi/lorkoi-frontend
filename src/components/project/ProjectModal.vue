@@ -40,7 +40,7 @@ watch(props, () => {
       newProject.name = res.data.project.name;
       newProject.color = res.data.project.color;
       newProject.owner = res.data.project.owner;
-      members.value = res.data.project.members.map((m) => m.memberId);
+      members.value = res.data.project.members;
       modalInfo.header = `📂Edit ${res.data.project.name}`;
       modalInfo.labelBtn = `Save changes`;
       fetchLoading.value = false;
@@ -62,14 +62,14 @@ const handleCreateProject = async () => {
   try {
     const res = await projectService.create({
       ...newProject,
-      members: members.value.map((m) => ({ memberId: m, isEdited: true })),
+      members: members.value,
     });
     projectStore.setProjects([...projectStore.projects, res.data.project]);
     showModal.value = false;
     showSuccessToast("Project created!");
     socket.emit("createProject", {
       project: res.data.project,
-      oldAndNewMembers: res.data.project.members.map((m) => m.memberId),
+      oldAndNewMembers: res.data.project.members,
     });
   } catch (error) {
     console.log(error);
@@ -81,12 +81,12 @@ const handleCreateProject = async () => {
 const handleUpdateProject = async () => {
   loading.value = true;
   try {
-    const oldMembers = projectStore.projects
-      .find((p) => p._id === props.updateProjectId)
-      .members.map((m) => m.memberId);
+    const oldMembers = projectStore.projects.find(
+      (p) => p._id === props.updateProjectId
+    ).members;
     let res = await projectService.update(props.updateProjectId, {
       ...newProject,
-      members: members.value.map((m) => ({ memberId: m, isEdited: true })),
+      members: members.value,
     });
     projectStore.setProjects(
       projectStore.projects.map((project) =>

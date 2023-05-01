@@ -59,7 +59,7 @@ watch(state, () => {
 
       if (p) {
         const isMember = state.incomingProject.members.find(
-          (m) => m.memberId === userStore.user._id
+          (m) => m === userStore.user._id
         );
         if (isMember) {
           projectStore.setProjects(
@@ -102,9 +102,24 @@ watch(state, () => {
           (project) => project._id !== state.incomingProject._id
         )
       );
+      projectStore.setPinnedProjects(
+        projectStore.pinnedProjects.filter(
+          (project) => project._id !== state.incomingProject._id
+        )
+      );
       showInfoToast(
         `Project '${state.incomingProject.name}' has been deleted by owner!`
       );
+      state.incomingProject = null;
+    } else if (state.incomingProject.action === "pinned") {
+      projectStore.setProjects(
+        projectStore.projects.map((p) =>
+          p._id === state.incomingProject._id
+            ? { ...p, pinnedUsers: state.incomingProject.pinnedUsers }
+            : p
+        )
+      );
+
       state.incomingProject = null;
     }
   }
@@ -142,16 +157,28 @@ const openModal = (e) => {
   chosenProjectId.value = e.target.id;
 };
 
-const handlePinProject = async (projectId, value) => {
+const handlePinProject = async (projectId, pinnedUsers) => {
+  const currentUserId = pinnedUsers.find((u) => u === userStore.user._id);
   try {
-    await projectService.update(projectId, { pinned: value });
+    if (!currentUserId) {
+      pinnedUsers = [...pinnedUsers, userStore.user._id];
+    } else {
+      pinnedUsers = pinnedUsers.filter((u) => u !== userStore.user._id);
+    }
+    await projectService.update(projectId, {
+      pinnedUsers,
+    });
     projectStore.setProjects(
       projectStore.projects.map((project) =>
-        project._id === projectId ? { ...project, pinned: value } : project
+        project._id === projectId ? { ...project, pinnedUsers } : project
       )
     );
     const res = await projectService.getPinned();
     projectStore.setPinnedProjects(res.data.projects);
+    socket.emit("handleProject", {
+      project: { _id: projectId, pinnedUsers },
+      action: "pinned",
+    });
   } catch (error) {
     console.log(error);
   }
@@ -186,12 +213,20 @@ const handlePinProject = async (projectId, value) => {
         <template #body="slot">
           <div v-if="!loading" class="flex gap-4 items-center">
             <span
-              @click.stop="handlePinProject(slot.data._id, !slot.data.pinned)"
+              @click.stop="
+                handlePinProject(slot.data._id, slot.data.pinnedUsers)
+              "
               class="cursor-pointer hover:text-blue-500"
-              :class="`pi pi-bookmark${slot.data.pinned ? '-fill' : ''} `"
+              :class="`pi pi-bookmark${
+                slot.data.pinnedUsers?.includes(userStore.user._id)
+                  ? '-fill'
+                  : ''
+              } `"
               v-tooltip.right="
                 `${
-                  slot.data.pinned ? 'Unpin' : 'Pin'
+                  slot.data.pinnedUsers?.includes(userStore.user._id)
+                    ? 'Unpin'
+                    : 'Pin'
                 } the project to left panel`
               "
             ></span>
@@ -219,7 +254,7 @@ const handlePinProject = async (projectId, value) => {
 
               <AvatarGroup class="ml-2">
                 <Avatar
-                  v-for="{ memberId } in slot.data.members"
+                  v-for="memberId in slot.data.members"
                   :key="memberId"
                   :image="getUserById(memberId)?.avatar"
                   :label="getUserById(memberId)?.firstName[0]"

@@ -311,7 +311,7 @@ const handleRedirectToProjects = () => {
           v-tooltip.bottom="getUserById(project?.owner).firstName"
         />
         <Avatar
-          v-for="{ memberId } in project.members"
+          v-for="memberId in project.members"
           :key="memberId"
           :image="getUserById(memberId)?.avatar"
           :label="getUserById(memberId)?.firstName[0]"
@@ -328,20 +328,16 @@ const handleRedirectToProjects = () => {
           v-tooltip.bottom="getUserById(project?.owner)?.firstName"
         />
         <Avatar
-          :image="getUserById(project?.members[0].memberId)?.avatar"
-          :label="getUserById(project?.members[0].memberId)?.firstName[0]"
+          :image="getUserById(project?.members[0])?.avatar"
+          :label="getUserById(project?.members[0])?.firstName[0]"
           class="border p-[2px] border-gray-500"
-          v-tooltip.bottom="
-            getUserById(project?.members[0].memberId)?.firstName
-          "
+          v-tooltip.bottom="getUserById(project?.members[0])?.firstName"
         />
         <Avatar
-          :image="getUserById(project?.members[1].memberId)?.avatar"
-          :label="getUserById(project?.members[1].memberId)?.firstName[0]"
+          :image="getUserById(project?.members[1])?.avatar"
+          :label="getUserById(project?.members[1])?.firstName[0]"
           class="border p-[2px] border-gray-500"
-          v-tooltip.bottom="
-            getUserById(project?.members[1].memberId)?.firstName
-          "
+          v-tooltip.bottom="getUserById(project?.members[1])?.firstName"
         />
         <Avatar
           :label="`+${project?.members.length - 2}`"
@@ -350,9 +346,7 @@ const handleRedirectToProjects = () => {
               .filter((_, index) => index > 1)
               .map(
                 (m) =>
-                  getUserById(m.memberId)?.lastName +
-                  ' ' +
-                  getUserById(m.memberId)?.firstName
+                  getUserById(m)?.lastName + ' ' + getUserById(m)?.firstName
               )
               .join('\n')
           "
