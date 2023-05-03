@@ -18,8 +18,8 @@ const userService = new UserService();
 
 let currentLink = ref(route.fullPath.split("/").at(-1));
 
-const users = ref([]);
 const showStartNewRoomModal = ref(false);
+const textSearch = ref("");
 
 onMounted(async () => {
   try {
@@ -106,8 +106,8 @@ const changeLink = (link) => (currentLink.value = link);
     </div>
 
     <!-- Component -->
-    <div class="text-white mt-auto">
-      <ChatList :users="users.filter((u) => u._id !== userStore.user._id)" />
+    <div class="text-white mt-auto min-h-[280px]">
+      <ChatList />
     </div>
 
     <button
@@ -133,12 +133,13 @@ const changeLink = (link) => (currentLink.value = link);
           type="text"
           class="outline-none flex-1 ml-3"
           placeholder="Search user"
+          v-model.trim="textSearch"
         />
       </div>
 
       <div class="w-full p-2 border mt-4 overflow-auto h-[300px]">
         <span class="ml-2 text-[14px] font-bold text-gray-500">All users</span>
-        <UserList />
+        <UserList :textSearch="textSearch" />
       </div>
     </div>
   </Dialog>

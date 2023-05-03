@@ -16,7 +16,7 @@
         >Personal Setting</span
       >
 
-      <div class="py-2 px-3 cursor-pointer hover:bg-gray-200">
+      <div class="py-2 px-3 cursor-pointer bg-gray-200">
         <span
           class="pi pi-user text-gray-400 mx-2"
           style="font-size: 14px"
@@ -24,15 +24,18 @@
         <span class="text-[14px] text-gray-700">My Profile</span>
       </div>
 
-      <div class="py-2 px-3 cursor-pointer hover:bg-gray-200">
+      <!-- <div class="py-2 px-3 cursor-pointer hover:bg-gray-200">
         <span
           class="pi pi-lock text-gray-400 mx-2"
           style="font-size: 14px"
         ></span>
         <span class="text-[14px] text-gray-700">Change Password</span>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.active-link {
+}
+</style>

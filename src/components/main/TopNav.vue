@@ -59,7 +59,7 @@ const handleLogout = () => {
     </div>
 
     <div class="flex items-center gap-3">
-      <button
+      <!-- <button
         class="px-[10px] py-[8px] bg-green-100 text-green-600 flex items-center rounded-md hover:bg-green-200"
         @click="visible = true"
       >
@@ -74,7 +74,7 @@ const handleLogout = () => {
         aria-controls="overlay_panel"
       >
         <span class="pi pi-bell text-gray-500"></span>
-      </div>
+      </div> -->
 
       <Avatar
         :image="userStore.user.avatar"

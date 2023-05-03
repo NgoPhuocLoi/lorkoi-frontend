@@ -1,23 +1,23 @@
 <script setup>
 import ProjectModel from "@/components/project/ProjectModal.vue";
+import useToast from "@/hooks/useToast";
 import { ProjectService } from "@/services";
+import { socket, state } from "@/services/socket";
 import { useCommonStore, useProjectStore, useUserStore } from "@/stores";
 import { getUserById } from "@/utils";
 import AvatarGroup from "primevue/avatargroup";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
+import Skeleton from "primevue/skeleton";
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import Avatar from "../../components/common/Avatar.vue";
 import ConfirmModal from "../../components/common/ConfirmModal.vue";
-import { socket, state } from "@/services/socket";
-import useToast from "@/hooks/useToast";
-import Skeleton from "primevue/skeleton";
 
 const projectService = new ProjectService();
 
 const router = useRouter();
-const route = useRoute();
+
 const projectStore = useProjectStore();
 const commonStore = useCommonStore();
 const userStore = useUserStore();
@@ -247,7 +247,7 @@ const handlePinProject = async (projectId, pinnedUsers) => {
                 :image="getUserById(slot.data.owner)?.avatar"
                 :label="getUserById(slot.data.owner)?.firstName[0]"
                 shape="square"
-                class="border p-[2px] border-gray-500 after:w-[10px] after:h-[10px] after:bg-red-500 after:contents['a']"
+                class="border p-[2px] border-gray-500"
                 size="small"
                 v-tooltip.top="`Project owner`"
               />
@@ -309,6 +309,16 @@ const handlePinProject = async (projectId, pinnedUsers) => {
           <Skeleton v-else></Skeleton> </template
       ></Column>
     </DataTable>
+
+    <div class="text-center text-gray-700 font-semibold" v-else>
+      You don't have any project yet.
+      <span
+        data-type="editProject"
+        @click="openModal"
+        class="text-blue-500 cursor-pointer"
+        >Create now!</span
+      >
+    </div>
   </div>
 
   <ProjectModel

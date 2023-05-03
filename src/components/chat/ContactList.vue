@@ -10,15 +10,14 @@ const chatStore = useChatStore();
 const userStore = useUserStore();
 const roomService = new RoomService();
 const userService = new UserService();
-const props = defineProps(["users"]);
 
 const onlineUsers = ref([]);
 const roomsHaveChatted = ref([]);
 const onlineStyle =
   "after:w-[10px] after:h-[10px] after:rounded-full after:bg-green-400 after:absolute after:top-0 after:right-0";
 watch(state, () => {
-  onlineUsers.value = props.users.filter((u) =>
-    state.onlineUsersId.includes(u._id)
+  onlineUsers.value = userStore.allUsers.filter(
+    (u) => u._id !== userStore.user._id && state.onlineUsersId.includes(u._id)
   );
 });
 
@@ -83,6 +82,13 @@ const changeChat = async (userId) => {
         ${state.onlineUsersId.includes(user._id) ? onlineStyle : ''}`"
         />
         <span class="ml-2">{{ user.lastName }} {{ user.firstName }}</span>
+      </div>
+
+      <div
+        class="text-[14px] text-gray-400 ml-2 font-semibold"
+        v-if="roomsHaveChatted.length === 0"
+      >
+        No contacts yet.
       </div>
     </div>
   </div>

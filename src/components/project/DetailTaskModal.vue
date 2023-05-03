@@ -1,10 +1,11 @@
 <script setup>
 import { SubTaskService, TaskService } from "@/services";
 import Dialog from "primevue/dialog";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import ConfirmModal from "../common/ConfirmModal.vue";
 import { socket, state } from "@/services/socket";
+import { useProjectStore } from "@/stores";
 
 let timer;
 const props = defineProps(["visible", "chosenTask"]);
@@ -17,9 +18,13 @@ const showDeleteConfirm = ref(false);
 const subTaskToUpdate = ref(null);
 
 const route = useRoute();
-
+const projectStore = useProjectStore();
 const taskService = new TaskService(route.params.projectId);
 const subTaskService = new SubTaskService();
+
+const projectName = ref(
+  projectStore.projects.find((p) => p._id === route.params.projectId).name
+);
 
 watch(props, () => {
   showModal.value = props.visible;
@@ -68,7 +73,6 @@ const handleDeleteTask = async () => {
 
 const handleInput = (e) => {
   clearTimeout(timer);
-  console.log(e.target.id);
   timer = setTimeout(async () => {
     await taskService.update(task.value._id, {
       [e.target.id]: e.target.innerText,
@@ -150,7 +154,7 @@ const handleActiveUpdate = (subtask) => {
     >
       <template #header>
         <div class="flex justify-between flex-1 items-center mr-2 my-[-10px]">
-          <h1 class="font-bold">My Project</h1>
+          <h1 class="font-bold">{{ projectName }}</h1>
 
           <div>
             <span
